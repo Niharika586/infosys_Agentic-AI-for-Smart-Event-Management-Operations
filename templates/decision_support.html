@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Decision Support{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-comments"></i> Real-Time Decision Support Center</h1>
+        <p>Ask an event question and the orchestrator analyzes live data to give you a risk level, recommendation and reasoning.</p>
+      </div>
+    </div>
+
+    <div class="glass" style="padding:24px;" data-aos="fade-up">
+      <div class="decision-flow-steps">
+        <span class="step">QUESTION</span><span class="arrow">→</span>
+        <span class="step">ANALYZING</span><span class="arrow">→</span>
+        <span class="step">AGENTS INVOKED</span><span class="arrow">→</span>
+        <span class="step">ANALYSIS</span><span class="arrow">→</span>
+        <span class="step">RISK LEVEL</span><span class="arrow">→</span>
+        <span class="step">RECOMMENDATION</span><span class="arrow">→</span>
+        <span class="step">REASONING</span><span class="arrow">→</span>
+        <span class="step">ACTION</span>
+      </div>
+
+      <div class="question-input-row">
+        <input type="text" id="questionInput" placeholder="e.g. Is the event ready?">
+        <button class="btn btn-gradient" id="askBtn"><i class="fa-solid fa-paper-plane"></i> Ask</button>
+      </div>
+
+      <div class="sample-questions">
+        {% for q in sample_questions %}
+        <span class="sample-q-chip" data-q="{{ q }}">{{ q }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="quick-action-grid">
+        {% for key, action in quick_actions.items() %}
+        <div class="quick-action-btn" data-action="{{ key }}"><i class="fa-solid fa-bolt"></i> {{ action.label }}</div>
+        {% endfor %}
+      </div>
+
+      <div id="analyzingIndicator" class="analyzing-indicator" style="display:none;">
+        <span class="dot-spin"></span> Analyzing current database state...
+      </div>
+      <div id="decisionResult"></div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/decision_support.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Sponsorship &amp; Incidents{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Milestone 3 — Sponsorship &amp; Incident Management</h1>
+        <p>Sponsor discovery, outreach and performance, plus incident tracking and operational alerts.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sponsor_agent') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Sponsorship Agent</a>
+        <a href="{{ url_for('incident_agent') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-triangle-exclamation"></i> Incident Agent</a>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass">
+        <div class="dcard-icon purple"><i class="fa-solid fa-handshake"></i></div>
+        <div><h3>{{ perf.total_sponsors }}</h3><p>Total Sponsors Tracked</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon orange"><i class="fa-solid fa-bell"></i></div>
+        <div><h3>{{ perf.followups_due }}</h3><p>Follow-ups Due / Overdue</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        <div><h3>{{ perf.confirmed }}</h3><p>Confirmed Sponsors</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div><h3>{{ inc_stats.open_incidents }}</h3><p>Open Incidents</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon cyan"><i class="fa-solid fa-fire"></i></div>
+        <div><h3>{{ inc_stats.critical }}</h3><p>Critical Incidents</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon indigo"><i class="fa-solid fa-bell-concierge"></i></div>
+        <div><h3>{{ recent_alerts|length }}</h3><p>Operational Alerts</p></div>
+      </div>
+    </div>
+
+    <!-- Quick access -->
+    <div class="dash-header" style="margin-top:6px;" data-aos="fade-up">
+      <div><h2 style="font-size:1.25rem;">Sponsorship Operations</h2><p>Discover, evaluate, approach and track sponsors end-to-end.</p></div>
+    </div>
+    <div class="dash-cards" data-aos="fade-up">
+      <a href="{{ url_for('sponsor_agent') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon orange"><i class="fa-solid fa-robot"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sponsorship Agent</h3><p>Suitability scoring</p></div>
+      </a>
+      <a href="{{ url_for('sponsors_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon blue"><i class="fa-solid fa-magnifying-glass-dollar"></i></div>
+        <div><h3 style="font-size:1.05rem;">Find / Manage Sponsors</h3><p>Directory &amp; status</p></div>
+      </a>
+      <a href="{{ url_for('sponsor_outreach') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon purple"><i class="fa-solid fa-paper-plane"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sponsor Outreach</h3><p>Approach &amp; message</p></div>
+      </a>
+      <a href="{{ url_for('sponsor_followups_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon pink"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div><h3 style="font-size:1.05rem;">Follow-Ups</h3><p>Due, overdue, upcoming</p></div>
+      </a>
+      <a href="{{ url_for('sponsor_performance') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon teal"><i class="fa-solid fa-chart-pie"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sponsor Performance</h3><p>Pipeline &amp; conversion</p></div>
+      </a>
+    </div>
+
+    <div class="dash-header" style="margin-top:6px;" data-aos="fade-up">
+      <div><h2 style="font-size:1.25rem;">Incident Operations</h2><p>Report, track and resolve operational incidents.</p></div>
+    </div>
+    <div class="dash-cards" data-aos="fade-up">
+      <a href="{{ url_for('incident_agent') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon red"><i class="fa-solid fa-robot"></i></div>
+        <div><h3 style="font-size:1.05rem;">Incident Agent</h3><p>Action recommendations</p></div>
+      </a>
+      <a href="{{ url_for('report_incident') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon orange"><i class="fa-solid fa-circle-plus"></i></div>
+        <div><h3 style="font-size:1.05rem;">Report Incident</h3><p>Log a new incident</p></div>
+      </a>
+      <a href="{{ url_for('incidents_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon indigo"><i class="fa-solid fa-list-check"></i></div>
+        <div><h3 style="font-size:1.05rem;">Incident Management</h3><p>All incidents &amp; status</p></div>
+      </a>
+      <a href="{{ url_for('alerts_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon cyan"><i class="fa-solid fa-bell-concierge"></i></div>
+        <div><h3 style="font-size:1.05rem;">Operational Alerts</h3><p>{{ recent_alerts|length }} active</p></div>
+      </a>
+    </div>
+
+    <!-- Bottom widgets: follow-ups + alerts preview -->
+    <div class="dash-bottom-grid" data-aos="fade-up">
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Follow-Ups Needing Attention</h3>
+        <ul class="recent-list">
+          {% for f in (followups.overdue + followups.due_today)[:6] %}
+          <li>
+            <div class="avatar">{{ f.company_name[0]|upper }}</div>
+            <div class="recent-info"><b>{{ f.company_name }}</b><span>Due {{ f.due_date }} · {{ f.reason }}</span></div>
+          </li>
+          {% else %}
+          <li class="muted">No urgent follow-ups right now.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-bell-concierge"></i> Recent Operational Alerts</h3>
+        <ul class="notif-list">
+          {% for a in recent_alerts %}
+          <li><i class="fa-solid {{ 'fa-circle-exclamation' if a.severity in ['Critical','High'] else 'fa-triangle-exclamation' if a.severity == 'Warning' else 'fa-circle-info' }}"></i> {{ a.title }}</li>
+          {% else %}
+          <li class="muted">No active alerts.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-sack-dollar"></i> Sponsorship Amounts</h3>
+        <ul class="notif-list">
+          <li><i class="fa-solid fa-file-invoice-dollar"></i> Requested: ₹{{ '{:,.0f}'.format(perf.amount_requested) }}</li>
+          <li><i class="fa-solid fa-handshake"></i> Committed: ₹{{ '{:,.0f}'.format(perf.amount_committed) }}</li>
+          <li><i class="fa-solid fa-circle-check"></i> Received: ₹{{ '{:,.0f}'.format(perf.amount_received) }}</li>
+          <li><i class="fa-solid fa-hourglass-half"></i> Pending: ₹{{ '{:,.0f}'.format(perf.amount_pending) }}</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

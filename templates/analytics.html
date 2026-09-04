@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}AI Analytics{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-robot gradient-text"></i> AI Analytics Engine</h1>
+        <p>Rule-based predictive intelligence generated from {{ total }} registrations.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('reports') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-file-export"></i> Generate Report</a>
+      </div>
+    </div>
+
+    <!-- AI Summary -->
+    <div class="glass ai-insight-card" data-aos="fade-up">
+      <div class="ai-insight-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div><h3>AI-Generated Summary</h3><p>{{ ai_summary }}</p></div>
+    </div>
+
+    <!-- Prediction cards -->
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass">
+        <div class="dcard-icon blue"><i class="fa-solid fa-chart-line"></i></div>
+        <div><h3>{{ attendance_pred.predicted_percentage }}%</h3><p>Attendance Prediction ({{ attendance_pred.confidence }})</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon orange"><i class="fa-solid fa-user-clock"></i></div>
+        <div><h3>{{ no_shows|selectattr('risk_level','equalto','High')|list|length }}</h3><p>High No-Show Risk</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon purple"><i class="fa-solid fa-clock"></i></div>
+        <div><h3>{{ insights.peak_registration_hour }}</h3><p>Peak Registration Time</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon teal"><i class="fa-solid fa-building-columns"></i></div>
+        <div><h3>{{ insights.top_departments[0][0] if insights.top_departments else 'N/A' }}</h3><p>Top Department</p></div>
+      </div>
+    </div>
+
+    <!-- Participant Category Breakdown -->
+    <div class="dash-header" data-aos="fade-up" style="margin-top:40px;">
+      <div>
+        <h2><i class="fa-solid fa-users-rectangle gradient-text"></i> Participant Category Breakdown</h2>
+        <p>Distribution of all registrations across the 9 participant categories.</p>
+      </div>
+    </div>
+    <div class="dash-cards cat-cards" data-aos="fade-up">
+      {% set cat_icons = {
+        'Student': ['fa-user-graduate','blue'], 'Professional': ['fa-briefcase','purple'],
+        'Speaker': ['fa-microphone','pink'], 'Volunteer': ['fa-hand-holding-heart','green'],
+        'Organizer': ['fa-clipboard-list','orange'], 'Sponsor': ['fa-handshake','teal'],
+        'VIP Guest': ['fa-crown','red'], 'Media': ['fa-camera-retro','cyan'],
+        'Exhibitor': ['fa-store','indigo']
+      } %}
+      {% for cat, count in category_counts %}
+      <div class="dcard glass">
+        <div class="dcard-icon {{ cat_icons[cat][1] }}"><i class="fa-solid {{ cat_icons[cat][0] }}"></i></div>
+        <div><h3>{{ count }}</h3><p>{{ cat }}</p></div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-pie"></i> Participant Categories (Pie)</h3>
+        <canvas id="categoryPieChart"></canvas>
+      </div>
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-column"></i> Participant Categories (Bar)</h3>
+        <canvas id="categoryBarChart"></canvas>
+      </div>
+    </div>
+
+    <div class="charts-grid single" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-location-dot"></i> Location Analysis</h3>
+        <canvas id="citiesChart"></canvas>
+      </div>
+    </div>
+
+    <div class="two-col-grid" data-aos="fade-up">
+      <!-- Recommendations -->
+      <div class="glass pad-card">
+        <h3><i class="fa-solid fa-lightbulb"></i> AI Recommendations</h3>
+        <ul class="reco-list">
+          {% for r in recommendations %}
+          <li><i class="fa-solid fa-circle-check"></i> {{ r }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- No-show risk table -->
+      <div class="glass pad-card">
+        <h3><i class="fa-solid fa-triangle-exclamation"></i> No-Show Risk (Top 10)</h3>
+        <table class="data-table compact">
+          <thead><tr><th>Name</th><th>Risk</th><th>Level</th></tr></thead>
+          <tbody>
+            {% for n in no_shows %}
+            <tr>
+              <td>{{ n.name }}</td>
+              <td>
+                <div class="risk-bar-outer"><div class="risk-bar-inner risk-{{ n.risk_level|lower }}" style="width:{{ n.risk_score }}%"></div></div>
+              </td>
+              <td><span class="badge badge-{{ 'red' if n.risk_level=='High' else 'orange' if n.risk_level=='Medium' else 'green' }}">{{ n.risk_level }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="muted center">No data yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="glass chart-card mt-32" data-aos="fade-up">
+      <h3><i class="fa-solid fa-chart-line"></i> Registration Trend</h3>
+      <canvas id="trendChart2"></canvas>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  fetch("{{ url_for('api_charts_overview') }}")
+    .then(r => r.json())
+    .then(data => initAnalyticsCharts(data));
+});
+</script>
+{% endblock %}

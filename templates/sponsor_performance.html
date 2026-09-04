@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Sponsor Performance{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Sponsor Performance Tracking</h1>
+        <p>Live metrics computed from actual sponsor records and communication history.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sponsors_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-building"></i> Sponsor Directory</a>
+      </div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-magnifying-glass"></i></div><div><h3>{{ perf.discovered }}</h3><p>Discovered / Potential</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-star"></i></div><div><h3>{{ perf.shortlisted }}</h3><p>Shortlisted</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-paper-plane"></i></div><div><h3>{{ perf.contacted }}</h3><p>Contacted</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon pink"><i class="fa-solid fa-hourglass-half"></i></div><div><h3>{{ perf.awaiting_response }}</h3><p>Awaiting Response</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon green"><i class="fa-solid fa-circle-check"></i></div><div><h3>{{ perf.confirmed }}</h3><p>Confirmed</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-circle-xmark"></i></div><div><h3>{{ perf.rejected }}</h3><p>Rejected</p></div></div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon teal"><i class="fa-solid fa-reply"></i></div><div><h3>{{ perf.response_rate }}%</h3><p>Outreach Response Rate</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon cyan"><i class="fa-solid fa-chart-line"></i></div><div><h3>{{ perf.conversion_rate }}%</h3><p>Sponsor Conversion Rate</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon indigo"><i class="fa-solid fa-bell"></i></div><div><h3>{{ perf.followups_due }}</h3><p>Follow-ups Due Now</p></div></div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-file-invoice-dollar"></i></div><div><h3 style="font-size:1.15rem;">₹{{ '{:,.0f}'.format(perf.amount_requested) }}</h3><p>Total Requested</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-handshake"></i></div><div><h3 style="font-size:1.15rem;">₹{{ '{:,.0f}'.format(perf.amount_committed) }}</h3><p>Total Committed</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon green"><i class="fa-solid fa-sack-dollar"></i></div><div><h3 style="font-size:1.15rem;">₹{{ '{:,.0f}'.format(perf.amount_received) }}</h3><p>Total Received</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-hourglass-half"></i></div><div><h3 style="font-size:1.15rem;">₹{{ '{:,.0f}'.format(perf.amount_pending) }}</h3><p>Pending Receipt</p></div></div>
+    </div>
+
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-pie"></i> Sponsor Status Distribution</h3>
+        <canvas id="sponsorStatusChart"></canvas>
+      </div>
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-column"></i> Sponsors by Industry</h3>
+        <canvas id="sponsorIndustryChart"></canvas>
+      </div>
+    </div>
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-reply"></i> Outreach Response Rate</h3>
+        <canvas id="sponsorResponseChart"></canvas>
+      </div>
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-money-bill-trend-up"></i> Sponsorship Amount by Status</h3>
+        <canvas id="sponsorAmountChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  fetch("{{ url_for('api_charts_sponsorship') }}").then(r => r.json()).then(data => initSponsorPerformanceCharts(data));
+});
+</script>
+{% endblock %}

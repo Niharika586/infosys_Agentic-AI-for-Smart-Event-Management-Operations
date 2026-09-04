@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Executive Report{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-file-export"></i> Executive Report</h1>
+        <p>A complete snapshot of event health, readiness, risks and recommendations — ready to download.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('executive_report_pdf') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-file-pdf"></i> Download PDF</a>
+        <a href="{{ url_for('executive_report_csv') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-csv"></i> Download CSV</a>
+      </div>
+    </div>
+
+    <div class="glass widget-card" data-aos="fade-up">
+      <h3><i class="fa-solid fa-file-lines"></i> Executive Summary</h3>
+      <p>{{ snapshot.executive_summary }}</p>
+      <p style="color:var(--text-dim); font-size:0.78rem; margin-top:10px;">Generated at {{ snapshot.generated_at }}</p>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-gauge-high"></i></div><div><h3>{{ snapshot.health_score }}/100</h3><p>Event Health ({{ snapshot.health_label }})</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-list-check"></i></div><div><h3>{{ snapshot.readiness_score }}/100</h3><p>Event Readiness</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon teal"><i class="fa-solid fa-users"></i></div><div><h3>{{ snapshot.totals.total_registrations }}</h3><p>Total Registrations</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon green"><i class="fa-solid fa-handshake"></i></div><div><h3>₹{{ '{:,.0f}'.format(snapshot.totals.sponsorship_amount_committed) }}</h3><p>Sponsorship Committed</p></div></div>
+    </div>
+
+    <div class="dash-bottom-grid" data-aos="fade-up">
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-triangle-exclamation"></i> Key Risks</h3>
+        <ul class="recent-list">{% for r in snapshot.key_risks %}<li><div class="avatar" style="background:#ef4444;">!</div><div class="recent-info"><b>{{ r }}</b></div></li>{% endfor %}</ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-lightbulb"></i> AI Recommendations</h3>
+        <ul class="recent-list">{% for r in snapshot.recommendations %}<li><div class="avatar">{{ r.priority[0] }}</div><div class="recent-info"><b>{{ r.area }}</b><span>{{ r.text }}</span></div></li>{% endfor %}</ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-shield-halved"></i> Top Risk Register Entries</h3>
+        <ul class="recent-list">
+          {% for r in register.risks[:6] %}
+          <li><div class="avatar" style="background:#f59e0b;">{{ r.severity[0] }}</div><div class="recent-info"><b>{{ r.title }}</b><span>{{ r.recommended_action }}</span></div></li>
+          {% else %}<li class="muted">No risks detected.</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

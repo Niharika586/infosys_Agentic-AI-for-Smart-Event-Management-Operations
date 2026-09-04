@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Incident Agent{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Incident Agent</h1>
+        <p>Rule-based recommendation engine for responding to operational incidents.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('incidents_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-list-check"></i> Incident Management</a>
+      </div>
+    </div>
+
+    <div class="glass agent-intro" data-aos="fade-up">
+      <div class="agent-intro-icon"><i class="fa-solid fa-robot"></i></div>
+      <div>
+        <h3>How the Incident Agent works</h3>
+        <p>Describe the category and priority of an incident and the agent returns an explainable, rule-based
+        recommended action — connecting back to the Venue Agent, Speaker Agent, Smart Scheduler or Sponsor
+        communication history where relevant. Use this to preview guidance before reporting a real incident.</p>
+      </div>
+    </div>
+
+    <form method="POST" class="glass agent-form" data-aos="fade-up">
+      <div class="form-grid three">
+        <div class="form-group">
+          <label>Category</label>
+          <select name="category" required>
+            <option value="">Select category</option>
+            {% for c in INCIDENT_CATEGORIES %}<option value="{{ c }}" {{ 'selected' if requirements.category==c }}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select name="priority" required>
+            <option value="">Select priority</option>
+            {% for p in INCIDENT_PRIORITIES %}<option value="{{ p }}" {{ 'selected' if requirements.priority==p }}>{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Briefly describe what happened...">{{ requirements.description or '' }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Get Recommended Action</button>
+    </form>
+
+    {% if recommendation %}
+    <div class="glass reco-card is-recommended" data-aos="fade-up">
+      <div class="reco-card-top">
+        <div class="reco-card-title">
+          <div class="reco-rank"><i class="fa-solid fa-robot"></i></div>
+          <div>
+            <h4>Recommended Action</h4>
+            <span>{{ requirements.category }} · <span class="badge badge-priority-{{ requirements.priority|lower }}">{{ requirements.priority }} Priority</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="explanation-box">{{ recommendation }}</div>
+      <div style="margin-top:14px;">
+        <a class="btn btn-gradient btn-sm" href="{{ url_for('report_incident') }}?category={{ requirements.category }}&priority={{ requirements.priority }}">
+          <i class="fa-solid fa-circle-plus"></i> Report This Incident
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

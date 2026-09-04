@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Venue Agent{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Venue Agent</h1>
+        <p>Rule-based recommendation engine for automated venue allocation.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('venues_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-building"></i> Manage Venues</a>
+      </div>
+    </div>
+
+    <div class="glass agent-intro" data-aos="fade-up">
+      <div class="agent-intro-icon"><i class="fa-solid fa-robot"></i></div>
+      <div>
+        <h3>How the Venue Agent works</h3>
+        <p>Enter your event/session requirements below. The agent checks every venue's capacity, required
+        facilities, and date/time availability against existing bookings, then ranks and recommends the
+        best match — with the reasoning shown for every venue considered.</p>
+      </div>
+    </div>
+
+    <form method="POST" class="glass agent-form" data-aos="fade-up">
+      <div class="form-grid three">
+        <div class="form-group">
+          <label>Expected Attendees</label>
+          <input type="number" name="attendees" min="1" value="{{ requirements.attendees or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label>Session Type</label>
+          <select name="session_type">
+            <option value="">Any</option>
+            {% for st in SESSION_TYPES %}
+            <option value="{{ st }}" {{ 'selected' if requirements.session_type==st }}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" name="session_date" value="{{ requirements.session_date or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="time" name="start_time" value="{{ requirements.start_time or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="time" name="end_time" value="{{ requirements.end_time or '' }}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Required Facilities</label>
+        <div class="checkbox-grid">
+          {% for f in FACILITIES_LIST %}
+          <label class="checkbox-chip">
+            <input type="checkbox" name="facilities" value="{{ f }}" {{ 'checked' if f in (requirements.facilities or []) }}> {{ f }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Get Venue Recommendations</button>
+    </form>
+
+    {% if results is not none %}
+    <div data-aos="fade-up">
+      <div class="agent-results-header">
+        <h3><i class="fa-solid fa-list-ol"></i> Recommendation Results ({{ results|length }} venue(s) evaluated)</h3>
+      </div>
+
+      {% if not results %}
+      <div class="glass" style="padding:30px;text-align:center;color:var(--text-dim);">
+        No venues found. Add venues first in Venue Management.
+      </div>
+      {% else %}
+      <div class="reco-cards">
+        {% for r in results %}
+        <div class="glass reco-card {{ 'is-recommended' if r.recommended }} {{ 'is-disqualified' if r.disqualified }}">
+          <div class="reco-card-top">
+            <div class="reco-card-title">
+              <div class="reco-rank">{{ loop.index }}</div>
+              <div>
+                <h4>{{ r.venue.name }} {% if r.recommended %}<span class="badge badge-green">Recommended</span>{% endif %}</h4>
+                <span>{{ r.venue.location or 'Location not set' }} · Capacity {{ r.venue.capacity }} · {{ r.venue.room_type or 'N/A' }}</span>
+              </div>
+            </div>
+            <div class="reco-score">
+              <span class="badge {{ 'badge-red' if r.status_label=='Conflict' else 'badge-gray' if r.status_label=='Maintenance' else 'badge-green' }}">{{ r.status_label }}</span>
+              <div class="reco-score-bar-outer"><div class="reco-score-bar-inner" style="width:{{ r.score }}%;"></div></div>
+              <span class="reco-score-val">{{ r.score }}%</span>
+            </div>
+          </div>
+          <div class="reco-reasons">
+            <ul>
+              {% for reason in r.reasons_pass %}
+              <li class="pass"><i class="fa-solid fa-circle-check"></i> {{ reason }}</li>
+              {% endfor %}
+            </ul>
+            <ul>
+              {% for reason in r.reasons_fail %}
+              <li class="fail"><i class="fa-solid fa-circle-xmark"></i> {{ reason }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% if not r.disqualified %}
+          <div style="margin-top:14px;">
+            <a class="btn btn-outline btn-sm"
+               href="{{ url_for('sessions_page') }}?prefill=1&venue_id={{ r.venue.id }}&session_type={{ requirements.session_type }}&session_date={{ requirements.session_date }}&start_time={{ requirements.start_time }}&end_time={{ requirements.end_time }}&attendees={{ requirements.attendees }}">
+              <i class="fa-solid fa-check"></i> Confirm Allocation &amp; Create Session
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initAgentForm);</script>
+{% endblock %}

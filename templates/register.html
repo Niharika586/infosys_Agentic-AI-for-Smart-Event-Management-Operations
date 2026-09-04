@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+  <div class="container" data-aos="fade-up">
+    <span class="badge-pill"><i class="fa-solid fa-user-plus"></i> Event Registration</span>
+    <h1>Register for the <span class="gradient-text">Event</span></h1>
+    <p>Fill in your details below. Fields marked * are required.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    {% if success_user %}
+    <div class="glass success-panel" id="passCard" data-aos="zoom-in">
+      <i class="fa-solid fa-circle-check success-icon"></i>
+      <h2>✅ Registration Successful!</h2>
+      <p>Thank you, <b>{{ success_user.name }}</b>. Your Registration ID is <b>{{ success_user.registration_id }}</b>.
+      A QR code has been generated for your check-in.</p>
+
+      {% if qr_base64 %}
+      <div class="pass-qr-wrap">
+        <img src="{{ qr_base64 }}" alt="Registration QR Code" width="200" height="200">
+      </div>
+      {% endif %}
+
+      <div class="success-details">
+        <div><span>Registration ID</span><b>{{ success_user.registration_id }}</b></div>
+        <div><span>Email</span><b>{{ success_user.email }}</b></div>
+        <div><span>Phone</span><b>{{ success_user.phone }}</b></div>
+        <div><span>Participant Category</span><b>{{ success_user.participant_category }}</b></div>
+        <div><span>Mode</span><b>{{ success_user.attendance_mode }}</b></div>
+      </div>
+
+      <div class="success-btns no-print">
+        <a href="{{ url_for('api_qrcode_download', user_id=success_user.id) }}" class="btn btn-outline"><i class="fa-solid fa-download"></i> Download QR Code</a>
+        <a href="{{ url_for('register_pass_pdf', user_id=success_user.id) }}" class="btn btn-outline"><i class="fa-solid fa-file-pdf"></i> Download Pass (PDF)</a>
+        <button type="button" class="btn btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Pass</button>
+      </div>
+      <div class="success-btns no-print">
+        <a href="{{ url_for('register') }}" class="btn btn-outline">Register Another</a>
+        <a href="{{ url_for('index') }}" class="btn btn-gradient">Back to Home</a>
+      </div>
+    </div>
+    {% else %}
+
+    <form class="glass reg-form" id="registerForm" method="POST" action="{{ url_for('register') }}" novalidate data-aos="fade-up">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" placeholder="e.g. Aarav Sharma" value="{{ form_data.name or '' }}" required>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="email" placeholder="e.g. aarav@example.com" value="{{ form_data.email or '' }}" required>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number *</label>
+          <input type="tel" id="phone" name="phone" placeholder="10-digit mobile number" maxlength="10" value="{{ form_data.phone or '' }}" required>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="college">College / Institution *</label>
+          <input type="text" id="college" name="college" placeholder="e.g. XYZ Institute of Technology" value="{{ form_data.college or '' }}" required>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="department">Department *</label>
+          <select id="department" name="department" required>
+            <option value="" disabled {{ 'selected' if not form_data.department }}>Select Department</option>
+            {% for d in ["Computer Science","Information Technology","Electronics","Mechanical","Civil","Electrical","Business Administration","Other"] %}
+            <option value="{{ d }}" {{ 'selected' if form_data.department == d }}>{{ d }}</option>
+            {% endfor %}
+          </select>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label>Gender *</label>
+          <div class="radio-row">
+            {% for g in ["Male","Female","Other"] %}
+            <label class="radio-pill">
+              <input type="radio" name="gender" value="{{ g }}" {{ 'checked' if form_data.gender == g }} required> {{ g }}
+            </label>
+            {% endfor %}
+          </div>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="city">City *</label>
+          <input type="text" id="city" name="city" placeholder="e.g. Bengaluru" value="{{ form_data.city or '' }}" required>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="participant_category">Participant Category *</label>
+          <select id="participant_category" name="participant_category" required>
+            <option value="" disabled {{ 'selected' if not form_data.participant_category }}>Select Category</option>
+            {% for c in categories %}
+            <option value="{{ c }}" {{ 'selected' if form_data.participant_category == c }}>{{ c }}</option>
+            {% endfor %}
+          </select>
+          <small class="error-msg"></small>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Attendance Mode *</label>
+          <div class="radio-row">
+            {% for m in ["Offline","Online"] %}
+            <label class="radio-pill">
+              <input type="radio" name="attendance_mode" value="{{ m }}" {{ 'checked' if form_data.attendance_mode == m }} required> {{ m }}
+            </label>
+            {% endfor %}
+          </div>
+          <small class="error-msg"></small>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-paper-plane"></i> Submit Registration</button>
+      <p class="form-note"><i class="fa-solid fa-shield-halved"></i> Your information is securely stored and never shared with third parties.</p>
+    </form>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initRegisterForm === 'function') initRegisterForm();
+});
+</script>
+{% endblock %}

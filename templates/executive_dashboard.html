@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Executive Dashboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-chart-line"></i> Executive Dashboard</h1>
+        <p>Real-time event intelligence for senior management — auto-refreshes every 30s.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('event_intelligence_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-brain"></i> Event Intelligence</a>
+        <a href="{{ url_for('executive_report_page') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-file-export"></i> Executive Report</a>
+      </div>
+    </div>
+
+    <!-- Health Score + Readiness -->
+    <div class="dash-cards" data-aos="fade-up" style="grid-template-columns: 1.4fr repeat(5, 1fr);">
+      <div class="glass health-score-card" id="healthScoreCard">
+        <div class="health-ring">
+          <svg viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6c5ce7"/><stop offset="100%" stop-color="#00d4ff"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+            <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="50"
+              stroke-dasharray="{{ 314 }}" stroke-dashoffset="{{ 314 - (314 * snapshot.health_score / 100) }}"></circle>
+          </svg>
+          <div class="ring-label"><b id="healthScoreVal">{{ snapshot.health_score }}</b><span>/ 100</span></div>
+        </div>
+        <div>
+          {% set label_class = {'Excellent':'badge-excellent','Healthy':'badge-healthy','Attention Required':'badge-attention','Critical':'badge-critical'} %}
+          <span class="badge-label {{ label_class.get(snapshot.health_label, 'badge-healthy') }}" id="healthLabel">{{ snapshot.health_label }}</span>
+          <h3 style="margin-top:8px;">Event Health Score</h3>
+          <p style="color:var(--text-muted); font-size:0.82rem;">Readiness: <b id="readinessVal">{{ snapshot.readiness_score }}</b>/100</p>
+        </div>
+      </div>
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-users"></i></div><div><h3 id="kpiRegistrations">{{ snapshot.totals.total_registrations }}</h3><p>Total Registrations</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-user-check"></i></div><div><h3 id="kpiAttendance">{{ snapshot.totals.expected_attendance_pct }}%</h3><p>Expected Attendance</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon green"><i class="fa-solid fa-qrcode"></i></div><div><h3 id="kpiCheckin">{{ snapshot.totals.checked_in }}</h3><p>Actual Check-ins</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-building"></i></div><div><h3 id="kpiVenue">{{ snapshot.totals.venue_utilization_pct }}%</h3><p>Venue Utilization</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div><div><h3 id="kpiIncidents">{{ snapshot.totals.critical_incidents }}</h3><p>Critical Incidents</p></div></div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon teal"><i class="fa-solid fa-user-tie"></i></div><div><h3>{{ snapshot.totals.speaker_utilization_pct }}%</h3><p>Speaker Utilization</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon indigo"><i class="fa-solid fa-handshake"></i></div><div><h3>{{ snapshot.totals.sponsorship_confirmed }}</h3><p>Sponsorship Secured</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon pink"><i class="fa-solid fa-user-slash"></i></div><div><h3>{{ snapshot.totals.no_show_high_risk }}</h3><p>No-show Risk (High)</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon cyan"><i class="fa-solid fa-list-check"></i></div><div><h3>{{ snapshot.totals.open_incidents }}</h3><p>Open Incidents</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-bell"></i></div><div><h3 id="kpiAlerts">{{ snapshot.totals.active_alerts }}</h3><p>Active Alerts</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-shield-halved"></i></div><div><h3 id="kpiRiskLevel">{{ register.overall_risk_level }}</h3><p>Overall Event Risk</p></div></div>
+    </div>
+
+    <!-- AI Executive Summary -->
+    <div class="glass ai-insight-card" data-aos="fade-up">
+      <div class="ai-insight-icon"><i class="fa-solid fa-brain"></i></div>
+      <div><h3>AI Executive Summary</h3><p id="execSummary">{{ snapshot.executive_summary }}</p></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card"><h3><i class="fa-solid fa-chart-line"></i> Registration Trend</h3><canvas id="regTrendChart"></canvas></div>
+      <div class="glass chart-card"><h3><i class="fa-solid fa-gauge-high"></i> Event Health Trend</h3><canvas id="healthTrendChart"></canvas></div>
+    </div>
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card"><h3><i class="fa-solid fa-building"></i> Venue Utilization</h3><canvas id="venueUtilChart"></canvas></div>
+      <div class="glass chart-card"><h3><i class="fa-solid fa-user-tie"></i> Speaker Utilization</h3><canvas id="speakerUtilChart"></canvas></div>
+    </div>
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card"><h3><i class="fa-solid fa-sack-dollar"></i> Sponsorship Pipeline</h3><canvas id="sponsorPipelineChart"></canvas></div>
+      <div class="glass chart-card"><h3><i class="fa-solid fa-triangle-exclamation"></i> Incident Severity</h3><canvas id="incidentSeverityChart"></canvas></div>
+    </div>
+
+    <!-- Top 5 Risks / Recommendations -->
+    <div class="dash-bottom-grid" data-aos="fade-up">
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-triangle-exclamation"></i> Top Risks</h3>
+        <ul class="recent-list">
+          {% for r in snapshot.key_risks %}
+          <li><div class="avatar" style="background:var(--red,#ef4444);">!</div><div class="recent-info"><b>{{ r }}</b></div></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-lightbulb"></i> Top Recommendations</h3>
+        <ul class="recent-list">
+          {% for r in snapshot.recommendations[:5] %}
+          <li><div class="avatar">{{ r.priority[0] }}</div><div class="recent-info"><b>{{ r.area }}</b><span>{{ r.text }}</span></div></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Pending Sponsor Follow-ups</h3>
+        <ul class="recent-list">
+          {% for f in pending_followups %}
+          <li><div class="avatar">{{ f.company_name[0]|upper }}</div><div class="recent-info"><b>{{ f.company_name }}</b><span>Due {{ f.due_date }}</span></div></li>
+          {% else %}
+          <li class="muted">No urgent follow-ups.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="dash-bottom-grid" data-aos="fade-up" style="margin-top:22px;">
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-calendar-days"></i> Upcoming Sessions</h3>
+        <ul class="recent-list">
+          {% for s in upcoming_sessions %}
+          <li><div class="avatar"><i class="fa-solid fa-mic"></i></div><div class="recent-info"><b>{{ s.title }}</b><span>{{ s.session_date }} · {{ s.venue_name or 'No venue' }}</span></div></li>
+          {% else %}
+          <li class="muted">No sessions scheduled.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-fire"></i> Critical Incidents</h3>
+        <ul class="recent-list">
+          {% for i in critical_incidents %}
+          <li><div class="avatar" style="background:var(--red,#ef4444);">!</div><div class="recent-info"><b>{{ i.title }}</b><span>{{ i.status }}</span></div></li>
+          {% else %}
+          <li class="muted">No critical incidents.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-bell-concierge"></i> Active Alerts</h3>
+        <ul class="notif-list">
+          {% for a in active_alerts %}
+          <li><i class="fa-solid fa-circle-exclamation"></i> {{ a.title }}</li>
+          {% else %}
+          <li class="muted">No active alerts.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+window.__healthTrend = {{ trend|tojson }};
+window.__regTrend = {{ snapshot.registration_trend|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/executive_dashboard.js') }}"></script>
+{% endblock %}

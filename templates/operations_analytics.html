@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Session Analytics{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Session Analytics</h1>
+        <p>Venue utilization, speaker assignments and scheduling-conflict statistics generated from live application data.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('analytics') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Registration AI Analytics</a>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass">
+        <div class="dcard-icon blue"><i class="fa-solid fa-building"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.total_venues }}">0</h3><p>Total Venues</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon green"><i class="fa-solid fa-door-open"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.available_venues }}">0</h3><p>Available Venues</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon orange"><i class="fa-solid fa-door-closed"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.occupied_venues }}">0</h3><p>Occupied Venues</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon purple"><i class="fa-solid fa-microphone"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.total_speakers }}">0</h3><p>Total Speakers</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon teal"><i class="fa-solid fa-user-check"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.assigned_speakers }}">0</h3><p>Assigned Speakers</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon pink"><i class="fa-solid fa-calendar-check"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.total_sessions }}">0</h3><p>Total Sessions</p></div>
+      </div>
+    </div>
+
+    <div class="dash-cards cat-cards" data-aos="fade-up">
+      <div class="dcard glass">
+        <div class="dcard-icon cyan"><i class="fa-solid fa-percent"></i></div>
+        <div><h3>{{ stats.venue_utilization_pct }}%</h3><p>Venue Utilization</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon indigo"><i class="fa-solid fa-chart-simple"></i></div>
+        <div><h3>{{ stats.speaker_utilization_pct }}%</h3><p>Speaker Utilization</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        <div><h3 class="counter" data-target="{{ stats.successful_allocations }}">0</h3><p>Successful Allocations</p></div>
+      </div>
+    </div>
+
+    <!-- AI Insight Banner -->
+    <div class="glass ai-insight-card" data-aos="fade-up">
+      <div class="ai-insight-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <h3>Conflict Prevention Summary</h3>
+        <p>The scheduling engine has prevented <b>{{ stats.total_conflicts_prevented }}</b> conflicting allocation attempt(s)
+        so far — {{ stats.venue_conflicts_prevented }} venue double-booking(s) and {{ stats.speaker_conflicts_prevented }}
+        speaker double-booking(s). {{ stats.scheduled_sessions }} session(s) are confirmed as Scheduled,
+        {{ stats.upcoming_sessions }} Upcoming, and {{ stats.completed_sessions }} Completed.</p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-pie"></i> Sessions by Type</h3>
+        <canvas id="sessionsByTypeChart"></canvas>
+      </div>
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-column"></i> Sessions by Day</h3>
+        <canvas id="sessionsByDayChart"></canvas>
+      </div>
+    </div>
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-building"></i> Venue Utilization %</h3>
+        <canvas id="venueUtilChart"></canvas>
+      </div>
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-microphone"></i> Speaker Assignments</h3>
+        <canvas id="speakerAssignChart"></canvas>
+      </div>
+    </div>
+    <div class="charts-grid single" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-triangle-exclamation"></i> Conflict Statistics</h3>
+        <canvas id="conflictStatsChart"></canvas>
+      </div>
+    </div>
+
+    {% if stats.recent_conflicts %}
+    <div class="glass widget-card" data-aos="fade-up" style="margin-top:22px;">
+      <h3><i class="fa-solid fa-clock-rotate-left"></i> Recently Prevented Conflicts</h3>
+      <ul class="reco-list">
+        {% for c in stats.recent_conflicts %}
+        <li><i class="fa-solid fa-shield-halved"></i> <span><b>[{{ c.conflict_type|capitalize }}]</b> {{ c.message }} <span class="muted" style="font-size:0.72rem;">· {{ c.created_at }}</span></span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  fetch("{{ url_for('api_charts_operations') }}")
+    .then(r => r.json())
+    .then(data => initOperationsCharts(data));
+});
+</script>
+{% endblock %}

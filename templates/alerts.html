@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Operational Alerts{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Operational Alerts</h1>
+        <p>Meaningful conditions surfaced automatically from sponsorship and incident activity.</p>
+      </div>
+      <div class="dash-header-actions">
+        <button class="btn btn-outline btn-sm" id="markAllReadBtn"><i class="fa-solid fa-check-double"></i> Mark All Read</button>
+      </div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-fire"></i></div><div><h3>{{ counts.Critical }}</h3><p>Critical</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></div><div><h3>{{ counts.High }}</h3><p>High</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon pink"><i class="fa-solid fa-circle-exclamation"></i></div><div><h3>{{ counts.Warning }}</h3><p>Warning</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-circle-info"></i></div><div><h3>{{ counts.Info }}</h3><p>Info</p></div></div>
+    </div>
+
+    <form method="GET" class="glass venue-search-panel" data-aos="fade-up">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Module</label>
+          <select name="module" onchange="this.form.submit()">
+            <option value="">All Modules</option>
+            {% for m in ['Sponsorship','Incident','Venue','Speaker','Session'] %}
+            <option value="{{ m }}" {{ 'selected' if module_filter==m }}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Severity</label>
+          <select name="severity" onchange="this.form.submit()">
+            <option value="">All Severities</option>
+            {% for s in ['Critical','High','Warning','Info'] %}
+            <option value="{{ s }}" {{ 'selected' if severity_filter==s }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </form>
+
+    <div class="alerts-list" id="alertsList" data-aos="fade-up">
+      {% for a in alerts %}
+      <div class="glass alert-card {{ 'is-read' if a.is_read }}" data-id="{{ a.id }}">
+        <div class="alert-icon sev-{{ a.severity }}">
+          <i class="fa-solid {{ 'fa-fire' if a.severity=='Critical' else 'fa-triangle-exclamation' if a.severity=='High' else 'fa-circle-exclamation' if a.severity=='Warning' else 'fa-circle-info' }}"></i>
+        </div>
+        <div class="alert-card-body">
+          <div class="alert-card-top">
+            <h4>{{ a.title }}</h4>
+            <span class="badge badge-severity-{{ a.severity|lower }}">{{ a.severity }}</span>
+          </div>
+          <div class="alert-card-meta">{{ a.module }} · {{ a.created_at }}</div>
+          <div class="alert-card-desc">{{ a.description }}</div>
+          <div class="alert-card-actions">
+            {% if a.module == 'Sponsorship' and a.related_entity_id %}
+            <a href="{{ url_for('sponsor_profile', sponsor_id=a.related_entity_id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View Sponsor</a>
+            {% elif a.module == 'Incident' and a.related_entity_id %}
+            <a href="{{ url_for('incident_detail', incident_id=a.related_entity_id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View Incident</a>
+            {% endif %}
+            <button class="btn btn-outline btn-xs mark-read-btn"><i class="fa-solid fa-check"></i> Mark Read</button>
+            <button class="btn btn-outline btn-xs dismiss-alert-btn"><i class="fa-solid fa-xmark"></i> Dismiss</button>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="glass" style="padding:40px;text-align:center;color:var(--text-dim);">No active alerts. Everything looks good.</div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initAlertsPage);</script>
+{% endblock %}

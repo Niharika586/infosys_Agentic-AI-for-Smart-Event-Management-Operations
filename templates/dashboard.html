@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Welcome back, {{ session.get('admin_name') }} 👋</h1>
+        <p>Here's what's happening with your event today.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('attendees') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-users"></i> Manage Attendees</a>
+        <a href="{{ url_for('analytics') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-robot"></i> AI Analytics</a>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass">
+        <div class="dcard-icon blue"><i class="fa-solid fa-users"></i></div>
+        <div><h3 class="counter" data-target="{{ total }}">0</h3><p>Total Registrations</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon purple"><i class="fa-solid fa-calendar-day"></i></div>
+        <div><h3 class="counter" data-target="{{ today_count }}">0</h3><p>Today's Registrations</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon pink"><i class="fa-solid fa-venus-mars"></i></div>
+        <div><h3>{{ male }} / {{ female }}</h3><p>Male / Female Ratio</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon green"><i class="fa-solid fa-building-columns"></i></div>
+        <div><h3 class="counter" data-target="{{ departments }}">0</h3><p>Departments</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon orange"><i class="fa-solid fa-city"></i></div>
+        <div><h3 class="counter" data-target="{{ cities }}">0</h3><p>Cities Represented</p></div>
+      </div>
+      <div class="dcard glass">
+        <div class="dcard-icon teal"><i class="fa-solid fa-chart-line"></i></div>
+        <div><h3>{{ attendance_pred.predicted_percentage }}%</h3><p>Attendance Prediction</p></div>
+      </div>
+    </div>
+
+    <!-- AI Insight Banner -->
+    <div class="glass ai-insight-card" data-aos="fade-up">
+      <div class="ai-insight-icon"><i class="fa-solid fa-brain"></i></div>
+      <div>
+        <h3>AI Insight</h3>
+        <p>{{ ai_summary }}</p>
+      </div>
+    </div>
+
+    <!-- Milestone 2: Venue & Speaker Operations quick access -->
+    <div class="dash-header" style="margin-top:6px;" data-aos="fade-up">
+      <div><h2 style="font-size:1.25rem;">Venue &amp; Speaker Operations</h2><p>Milestone 2 modules — manage venues, speakers, sessions and scheduling.</p></div>
+    </div>
+    <div class="dash-cards" data-aos="fade-up">
+      <a href="{{ url_for('venues_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon blue"><i class="fa-solid fa-building"></i></div>
+        <div><h3 style="font-size:1.05rem;">Venues</h3><p>Manage rooms &amp; capacity</p></div>
+      </a>
+      <a href="{{ url_for('speakers_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon purple"><i class="fa-solid fa-microphone"></i></div>
+        <div><h3 style="font-size:1.05rem;">Speakers</h3><p>Profiles &amp; availability</p></div>
+      </a>
+      <a href="{{ url_for('sessions_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon pink"><i class="fa-solid fa-list-check"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sessions</h3><p>Create &amp; assign</p></div>
+      </a>
+      <a href="{{ url_for('scheduler') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon green"><i class="fa-solid fa-calendar-days"></i></div>
+        <div><h3 style="font-size:1.05rem;">Scheduler</h3><p>Live day-by-day view</p></div>
+      </a>
+      <a href="{{ url_for('venue_agent') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon orange"><i class="fa-solid fa-robot"></i></div>
+        <div><h3 style="font-size:1.05rem;">Venue Agent</h3><p>AI venue recommender</p></div>
+      </a>
+      <a href="{{ url_for('operations_analytics') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon teal"><i class="fa-solid fa-chart-pie"></i></div>
+        <div><h3 style="font-size:1.05rem;">Ops Analytics</h3><p>Utilization &amp; conflicts</p></div>
+      </a>
+    </div>
+
+    <!-- Milestone 3: Sponsorship & Incident Operations quick access -->
+    <div class="dash-header" style="margin-top:6px;" data-aos="fade-up">
+      <div><h2 style="font-size:1.25rem;">Sponsorship &amp; Incident Operations</h2><p>Milestone 3 modules — sponsor discovery, outreach, follow-ups, performance, incidents and alerts.</p></div>
+    </div>
+    <div class="dash-cards" data-aos="fade-up">
+      <a href="{{ url_for('sponsor_agent') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon orange"><i class="fa-solid fa-robot"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sponsorship Agent</h3><p>{{ m3.potential_sponsors }} potential sponsors</p></div>
+      </a>
+      <a href="{{ url_for('sponsor_outreach') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon purple"><i class="fa-solid fa-paper-plane"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sponsor Outreach</h3><p>Approach &amp; message sponsors</p></div>
+      </a>
+      <a href="{{ url_for('sponsor_followups_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon pink"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div><h3 style="font-size:1.05rem;">Follow-Ups</h3><p>{{ m3.followups_due }} due / overdue</p></div>
+      </a>
+      <a href="{{ url_for('sponsor_performance') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon teal"><i class="fa-solid fa-chart-pie"></i></div>
+        <div><h3 style="font-size:1.05rem;">Sponsor Performance</h3><p>{{ m3.confirmed_sponsors }} confirmed</p></div>
+      </a>
+      <a href="{{ url_for('incident_agent') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon red"><i class="fa-solid fa-robot"></i></div>
+        <div><h3 style="font-size:1.05rem;">Incident Agent</h3><p>{{ m3.open_incidents }} open incidents</p></div>
+      </a>
+      <a href="{{ url_for('alerts_page') }}" class="dcard glass" style="cursor:pointer;">
+        <div class="dcard-icon cyan"><i class="fa-solid fa-bell-concierge"></i></div>
+        <div><h3 style="font-size:1.05rem;">Operational Alerts</h3><p>{{ m3.open_alerts }} active</p></div>
+      </a>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-column"></i> Registrations by Department</h3>
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-pie"></i> Gender Distribution</h3>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+    <div class="charts-grid single" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-chart-line"></i> Registration Trend (Last 7 Days)</h3>
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Bottom widgets -->
+    <div class="dash-bottom-grid" data-aos="fade-up">
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Registrations</h3>
+        <ul class="recent-list">
+          {% for u in recent_users %}
+          <li>
+            <div class="avatar">{{ u.name[0]|upper }}</div>
+            <div class="recent-info"><b>{{ u.name }}</b><span>{{ u.participant_category }} · {{ u.created_at }}</span></div>
+          </li>
+          {% else %}
+          <li class="muted">No registrations yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+        <ul class="notif-list">
+          <li><i class="fa-solid fa-user-plus"></i> {{ today_count }} new registrations today</li>
+          <li><i class="fa-solid fa-triangle-exclamation"></i> Review high no-show risk attendees</li>
+          <li><i class="fa-solid fa-circle-check"></i> QR check-in system is live</li>
+          <li><i class="fa-solid fa-file-export"></i> Weekly report ready to download</li>
+        </ul>
+      </div>
+
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-cloud-sun"></i> Weather &amp; Calendar</h3>
+        <div class="weather-widget">
+          <i class="fa-solid fa-cloud-sun-rain"></i>
+          <div><h4>28°C</h4><span>Bengaluru · Partly Cloudy</span></div>
+        </div>
+        <div class="mini-calendar" id="miniCalendar"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  fetch("{{ url_for('api_charts_overview') }}")
+    .then(r => r.json())
+    .then(data => initDashboardCharts(data));
+  renderMiniCalendar();
+});
+</script>
+{% endblock %}

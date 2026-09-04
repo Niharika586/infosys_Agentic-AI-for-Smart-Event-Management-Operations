@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}QR Check-In{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>QR Check-In Station</h1>
+        <p>Generate QR codes and check-in attendees in real time.</p>
+      </div>
+    </div>
+
+    <!-- Live counter -->
+    <div class="checkin-counter glass" data-aos="fade-up">
+      <div>
+        <h2 id="checkedInCount">{{ checked_in_count }}</h2>
+        <p>Checked In</p>
+      </div>
+      <div class="counter-divider">/</div>
+      <div>
+        <h2 id="totalCount">{{ total }}</h2>
+        <p>Total Registered</p>
+      </div>
+      <div class="progress-ring-wrap">
+        <div class="progress-bar-outer"><div class="progress-bar-inner" id="checkinProgress" style="width: {{ (checked_in_count/total*100) if total else 0 }}%;"></div></div>
+        <span id="checkinPercent">{{ ((checked_in_count/total*100) if total else 0)|round(1) }}%</span>
+      </div>
+    </div>
+
+    <div class="two-col-grid" data-aos="fade-up">
+      <!-- Manual / scan check-in -->
+      <div class="glass pad-card">
+        <h3><i class="fa-solid fa-qrcode"></i> Scan / Enter Code</h3>
+        <p class="muted-text">Enter the Attendee ID, email, or scanned QR string below.</p>
+        <div class="checkin-input-row">
+          <input type="text" id="checkinCode" placeholder="e.g. REG-2026-0001 or scanned QR text">
+          <button class="btn btn-gradient" id="checkinBtn"><i class="fa-solid fa-right-to-bracket"></i> Check In</button>
+        </div>
+        <div id="checkinResult" class="checkin-result"></div>
+
+        <div class="camera-box">
+          <div id="qrReader"></div>
+          <button type="button" class="btn btn-outline btn-sm" id="startScanBtn"><i class="fa-solid fa-camera"></i> Start Camera Scan</button>
+          <button type="button" class="btn btn-outline btn-sm" id="stopScanBtn" style="display:none;"><i class="fa-solid fa-stop"></i> Stop Scan</button>
+        </div>
+      </div>
+
+      <!-- QR generator -->
+      <div class="glass pad-card">
+        <h3><i class="fa-solid fa-qrcode"></i> Generate Attendee QR</h3>
+        <p class="muted-text">Select an attendee to generate their unique QR code.</p>
+        <select id="qrUserSelect">
+          <option value="">Select Attendee</option>
+          {% for u in users %}
+          <option value="{{ u.id }}">#{{ u.id }} — {{ u.name }}</option>
+          {% endfor %}
+        </select>
+        <div id="qrDisplay" class="qr-display"></div>
+      </div>
+    </div>
+
+    <!-- Attendee status table -->
+    <div class="glass table-wrap mt-32" data-aos="fade-up">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Name</th><th>Registration ID</th><th>Category</th><th>Check-in Time</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td><td>{{ u.name }}</td><td>{{ u.registration_id }}</td><td>{{ u.participant_category }}</td>
+            <td>{{ u.check_in_time or '—' }}</td>
+            <td>{% if u.checked_in %}<span class="badge badge-green"><i class="fa-solid fa-check"></i> Checked In</span>{% else %}<span class="badge badge-gray">Not Checked In</span>{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted center">No attendees yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () { initCheckin(); });
+</script>
+{% endblock %}

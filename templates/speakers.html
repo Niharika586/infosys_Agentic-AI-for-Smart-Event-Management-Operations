@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Speaker Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Speaker Management</h1>
+        <p>Manage speaker profiles, expertise, availability and session assignments.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('speaker_agent') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Speaker Agent</a>
+        <button class="btn btn-gradient btn-sm" id="addSpeakerBtn"><i class="fa-solid fa-plus"></i> Add Speaker</button>
+      </div>
+    </div>
+
+    <div class="glass table-toolbar" data-aos="fade-up">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="speakerSearch" placeholder="Search by name, expertise or organization...">
+      </div>
+    </div>
+
+    <div class="glass table-wrap" data-aos="fade-up">
+      <table class="data-table" id="speakerTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Organization</th><th>Expertise</th>
+            <th>Preferred Type</th><th>Available Dates</th><th>Assigned</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="speakerBody">
+          {% for s in speakers %}
+          <tr data-id="{{ s.id }}" data-name="{{ s.name }}" data-email="{{ s.email }}" data-phone="{{ s.phone }}"
+              data-org="{{ s.organization }}" data-designation="{{ s.designation }}" data-expertise="{{ s.expertise }}"
+              data-bio="{{ s.bio }}" data-sessiontype="{{ s.preferred_session_type }}"
+              data-dates="{{ s.available_dates }}" data-slots="{{ s.available_slots }}">
+            <td>{{ s.id }}</td>
+            <td><b>{{ s.name }}</b><br><span class="muted" style="font-size:0.74rem;">{{ s.designation }}</span></td>
+            <td>{{ s.organization or '-' }}</td>
+            <td><div class="tag-pills">{% for e in s.expertise_list %}<span class="tag-pill">{{ e }}</span>{% endfor %}</div></td>
+            <td>{{ s.preferred_session_type or '-' }}</td>
+            <td style="font-size:0.78rem;">{{ s.available_dates_list|join(', ') or '-' }}</td>
+            <td><span class="badge {{ 'badge-green' if s.assigned_count else 'badge-gray' }}">{{ s.assigned_count }} session(s)</span></td>
+            <td class="action-cell">
+              <button class="icon-action edit-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button class="icon-action delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="muted center">No speakers added yet. Click "Add Speaker" to get started.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- Speaker Add/Edit Modal -->
+<div class="modal-overlay" id="speakerModal">
+  <div class="glass modal-box wide">
+    <div class="modal-header"><h3 id="speakerModalTitle">Add Speaker</h3><button id="closeSpeakerModal">&times;</button></div>
+    <form id="speakerForm">
+      <input type="hidden" id="speakerId">
+      <div class="form-grid two">
+        <div class="form-group"><label>Full Name</label><input type="text" id="speakerName" required></div>
+        <div class="form-group"><label>Email</label><input type="email" id="speakerEmail"></div>
+        <div class="form-group"><label>Phone</label><input type="text" id="speakerPhone"></div>
+        <div class="form-group"><label>Organization</label><input type="text" id="speakerOrg"></div>
+        <div class="form-group"><label>Designation</label><input type="text" id="speakerDesignation"></div>
+        <div class="form-group">
+          <label>Preferred Session Type</label>
+          <select id="speakerSessionType">
+            <option value="">Select type</option>
+            {% for st in SESSION_TYPES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Expertise / Topics (comma-separated)</label>
+        <input type="text" id="speakerExpertise" placeholder="e.g. Artificial Intelligence, Machine Learning"></div>
+      <div class="form-group"><label>Biography</label><textarea id="speakerBio" rows="3"></textarea></div>
+      <div class="form-grid two">
+        <div class="form-group"><label>Available Dates (comma-separated, YYYY-MM-DD)</label>
+          <input type="text" id="speakerDates" placeholder="2026-09-12,2026-09-20"></div>
+        <div class="form-group"><label>Available Time Slot</label>
+          <input type="text" id="speakerSlots" placeholder="09:00-18:00"></div>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Save Speaker</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initSpeakerTable);</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Follow-Up Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Follow-Up Management</h1>
+        <p>Sponsors whose follow-up date has arrived, passed, or is coming up — plus everyone currently awaiting a response.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sponsors_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-building"></i> Sponsor Directory</a>
+      </div>
+    </div>
+
+    <div class="followup-columns" data-aos="fade-up">
+
+      <div class="glass" style="padding:20px;">
+        <div class="followup-col-head"><i class="fa-solid fa-triangle-exclamation" style="color:#f87171;"></i> Overdue ({{ buckets.overdue|length }})</div>
+        {% for f in buckets.overdue %}
+        <div class="glass followup-item" data-fid="{{ f.id }}">
+          <div class="followup-item-top">
+            <b>{{ f.company_name }}</b>
+            <button class="btn btn-outline btn-xs complete-followup-btn" data-id="{{ f.id }}"><i class="fa-solid fa-check"></i> Done</button>
+          </div>
+          <p class="followup-item-reason">{{ f.reason }}</p>
+          <span class="followup-item-date">Was due {{ f.due_date }}</span>
+          <div style="margin-top:8px;"><a href="{{ url_for('sponsor_profile', sponsor_id=f.sponsor_id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View Sponsor</a></div>
+        </div>
+        {% else %}
+        <p class="timeline-empty">Nothing overdue.</p>
+        {% endfor %}
+      </div>
+
+      <div class="glass" style="padding:20px;">
+        <div class="followup-col-head"><i class="fa-solid fa-bell" style="color:#facc15;"></i> Due Today ({{ buckets.due_today|length }})</div>
+        {% for f in buckets.due_today %}
+        <div class="glass followup-item" data-fid="{{ f.id }}">
+          <div class="followup-item-top">
+            <b>{{ f.company_name }}</b>
+            <button class="btn btn-outline btn-xs complete-followup-btn" data-id="{{ f.id }}"><i class="fa-solid fa-check"></i> Done</button>
+          </div>
+          <p class="followup-item-reason">{{ f.reason }}</p>
+          <span class="followup-item-date">Due today</span>
+          <div style="margin-top:8px;"><a href="{{ url_for('sponsor_profile', sponsor_id=f.sponsor_id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View Sponsor</a></div>
+        </div>
+        {% else %}
+        <p class="timeline-empty">No follow-ups due today.</p>
+        {% endfor %}
+      </div>
+
+      <div class="glass" style="padding:20px;">
+        <div class="followup-col-head"><i class="fa-solid fa-calendar-days" style="color:#60a5fa;"></i> Upcoming ({{ buckets.upcoming|length }})</div>
+        {% for f in buckets.upcoming %}
+        <div class="glass followup-item" data-fid="{{ f.id }}">
+          <div class="followup-item-top">
+            <b>{{ f.company_name }}</b>
+            <button class="btn btn-outline btn-xs complete-followup-btn" data-id="{{ f.id }}"><i class="fa-solid fa-check"></i> Done</button>
+          </div>
+          <p class="followup-item-reason">{{ f.reason }}</p>
+          <span class="followup-item-date">Due {{ f.due_date }}</span>
+          <div style="margin-top:8px;"><a href="{{ url_for('sponsor_profile', sponsor_id=f.sponsor_id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View Sponsor</a></div>
+        </div>
+        {% else %}
+        <p class="timeline-empty">Nothing scheduled yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="glass" style="padding:20px;">
+        <div class="followup-col-head"><i class="fa-solid fa-hourglass-half" style="color:#a78bfa;"></i> Awaiting Response ({{ buckets.awaiting_response|length }})</div>
+        {% for s in buckets.awaiting_response %}
+        <div class="glass followup-item">
+          <div class="followup-item-top"><b>{{ s.company_name }}</b><span class="badge badge-yellow">{{ s.status }}</span></div>
+          <p class="followup-item-reason">{{ s.industry or 'N/A' }} · {{ s.contact_person or 'No contact set' }}</p>
+          <div style="margin-top:8px;"><a href="{{ url_for('sponsor_profile', sponsor_id=s.id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View Sponsor</a></div>
+        </div>
+        {% else %}
+        <p class="timeline-empty">No sponsors currently awaiting a response.</p>
+        {% endfor %}
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initFollowupActions);</script>
+{% endblock %}

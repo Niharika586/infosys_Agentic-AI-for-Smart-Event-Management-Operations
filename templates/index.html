@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-container">
+    <div class="hero-text" data-aos="fade-right">
+      <span class="badge-pill"><i class="fa-solid fa-sparkles"></i> Infosys Springboard · Milestone 1</span>
+      <h1>AI-Powered <span class="gradient-text">Registration Intelligence</span> &amp; Attendee Management</h1>
+      <p>A futuristic, full-stack event platform that registers attendees, predicts attendance,
+      flags no-show risk, and generates real-time organizer insights — powered by a transparent
+      rule-based AI engine.</p>
+      <div class="hero-btns">
+        <a href="{{ url_for('register') }}" class="btn btn-gradient">Register Now <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="{{ url_for('about') }}" class="btn btn-outline">Learn More <i class="fa-solid fa-circle-info"></i></a>
+      </div>
+      <div class="hero-tags">
+        <span><i class="fa-solid fa-check"></i> Flask + SQLite</span>
+        <span><i class="fa-solid fa-check"></i> AI Analytics</span>
+        <span><i class="fa-solid fa-check"></i> QR Check-in</span>
+      </div>
+    </div>
+    <div class="hero-visual" data-aos="fade-left">
+      <div class="glass hero-card float">
+        <div class="hero-card-top">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Live AI Prediction</span>
+        </div>
+        <div class="hero-card-value">{{ '%.1f'|format(78.4) }}%</div>
+        <p class="hero-card-label">Predicted Attendance Rate</p>
+        <div class="mini-bars">
+          <span style="height:40%"></span><span style="height:70%"></span><span style="height:55%"></span>
+          <span style="height:90%"></span><span style="height:65%"></span><span style="height:80%"></span>
+        </div>
+      </div>
+      <div class="glass hero-chip chip-1 float-slow"><i class="fa-solid fa-users"></i> {{ total }} Registered</div>
+      <div class="glass hero-chip chip-2 float-slow2"><i class="fa-solid fa-qrcode"></i> QR Check-in Ready</div>
+    </div>
+  </div>
+  <div class="hero-scroll"><i class="fa-solid fa-chevron-down"></i></div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section" data-aos="fade-up">
+  <div class="container stats-grid">
+    <div class="stat-card glass">
+      <i class="fa-solid fa-user-plus"></i>
+      <h3 class="counter" data-target="{{ total }}">0</h3>
+      <p>Total Registrations</p>
+    </div>
+    <div class="stat-card glass">
+      <i class="fa-solid fa-brain"></i>
+      <h3 class="counter" data-target="97">0</h3>
+      <p>AI Prediction Accuracy*</p>
+    </div>
+    <div class="stat-card glass">
+      <i class="fa-solid fa-bolt"></i>
+      <h3 class="counter" data-target="10">0</h3>
+      <p>Live Feature Pages</p>
+    </div>
+    <div class="stat-card glass">
+      <i class="fa-solid fa-clock"></i>
+      <h3 class="counter" data-target="24">0</h3>
+      <p>Hrs Real-time Monitoring</p>
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW -->
+<section class="section">
+  <div class="container overview-grid">
+    <div data-aos="fade-right">
+      <h2 class="section-title">Project <span class="gradient-text">Overview</span></h2>
+      <p class="section-sub">RegisterAI unifies event registration, attendee management and AI-driven
+      decision-making into a single, elegant dashboard. Built for Infosys Springboard's Virtual
+      Internship Milestone 1, it demonstrates a complete full-stack workflow — from data capture to
+      predictive analytics.</p>
+      <ul class="check-list">
+        <li><i class="fa-solid fa-circle-check"></i> Smart registration form with real-time validation</li>
+        <li><i class="fa-solid fa-circle-check"></i> Rule-based AI engine for attendance & no-show prediction</li>
+        <li><i class="fa-solid fa-circle-check"></i> Live analytics dashboard with animated charts</li>
+        <li><i class="fa-solid fa-circle-check"></i> QR-based check-in with live attendance counter</li>
+      </ul>
+    </div>
+    <div class="glass overview-card" data-aos="fade-left">
+      <i class="fa-solid fa-diagram-project big-icon"></i>
+      <h3>End-to-End Workflow</h3>
+      <p>Register → Validate → Store → Predict → Visualize → Check-in → Report.
+      Every stage is connected through a live Flask + SQLite backend.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title center" data-aos="fade-up">Powerful <span class="gradient-text">Features</span></h2>
+    <p class="section-sub center" data-aos="fade-up">Everything an organizer needs, wrapped in a modern glassmorphism interface.</p>
+
+    <div class="features-grid">
+      <div class="feature-card glass" data-aos="fade-up" data-aos-delay="0">
+        <div class="feature-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <h3>Smart Registration</h3>
+        <p>Real-time field validation, duplicate email detection, and instant confirmation.</p>
+      </div>
+      <div class="feature-card glass" data-aos="fade-up" data-aos-delay="100">
+        <div class="feature-icon"><i class="fa-solid fa-chart-pie"></i></div>
+        <h3>Analytics Dashboard</h3>
+        <p>Bar, pie and line charts visualizing gender ratio, departments, cities and trends.</p>
+      </div>
+      <div class="feature-card glass" data-aos="fade-up" data-aos-delay="200">
+        <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+        <h3>AI Recommendation Engine</h3>
+        <p>Predicts attendance %, flags no-show risk, and recommends event planning actions.</p>
+      </div>
+      <div class="feature-card glass" data-aos="fade-up" data-aos-delay="0">
+        <div class="feature-icon"><i class="fa-solid fa-qrcode"></i></div>
+        <h3>QR Check-In</h3>
+        <p>Generate unique QR codes per attendee and check them in instantly on event day.</p>
+      </div>
+      <div class="feature-card glass" data-aos="fade-up" data-aos-delay="100">
+        <div class="feature-icon"><i class="fa-solid fa-users-gear"></i></div>
+        <h3>Attendee Management</h3>
+        <p>Search, filter, sort, edit, delete and export attendee records with a click.</p>
+      </div>
+      <div class="feature-card glass" data-aos="fade-up" data-aos-delay="200">
+        <div class="feature-icon"><i class="fa-solid fa-file-export"></i></div>
+        <h3>Instant Reports</h3>
+        <p>Download polished PDF and CSV reports summarizing registrations and AI insights.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI BANNER -->
+<section class="ai-banner" data-aos="zoom-in">
+  <div class="container ai-banner-inner glass">
+    <div class="ai-banner-text">
+      <span class="badge-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Engine Live</span>
+      <h2>Let AI Guide Your Event Planning</h2>
+      <p>Our rule-based intelligence engine continuously analyzes registration data to
+      forecast turnout, highlight at-risk no-shows, and generate organizer-ready recommendations —
+      no black-box magic, fully explainable logic.</p>
+      <a href="{{ url_for('login') }}" class="btn btn-gradient">Explore AI Analytics <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="ai-banner-visual">
+      <i class="fa-solid fa-brain pulse-icon"></i>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}

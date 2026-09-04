@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}AI Registration Intelligence{% endblock %} | RegisterAI</title>
+<meta name="description" content="AI-Powered Registration Intelligence & Attendee Management System - Infosys Springboard Virtual Internship">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- AOS Animation -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+<!-- App CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_css %}{% endblock %}
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+
+<!-- Loading Screen -->
+<div id="loadingScreen">
+  <div class="loader-content">
+    <div class="loader-ring"><i class="fa-solid fa-brain"></i></div>
+    <p>Initializing AI Engine<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+  </div>
+</div>
+
+<!-- Animated background blobs -->
+<div class="bg-blobs" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar glass" id="navbar">
+  <div class="nav-container">
+    <a href="{{ url_for('index') }}" class="nav-logo">
+      <i class="fa-solid fa-brain"></i> <span>Register<b>AI</b></span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint=='index' }}">Home</a></li>
+      <li><a href="{{ url_for('about') }}" class="{{ 'active' if request.endpoint=='about' }}">About</a></li>
+      <li><a href="{{ url_for('register') }}" class="{{ 'active' if request.endpoint=='register' }}">Register</a></li>
+      <li><a href="{{ url_for('public_schedule') }}" class="{{ 'active' if request.endpoint=='public_schedule' }}">Schedule</a></li>
+      {% if session.get('admin_id') %}
+      <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}">Dashboard</a></li>
+      <li><a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint=='analytics' }}">AI Analytics</a></li>
+      <li><a href="{{ url_for('checkin') }}" class="{{ 'active' if request.endpoint=='checkin' }}">Check-In</a></li>
+      <li class="nav-dropdown">
+        <a href="#" class="{{ 'active' if request.endpoint in ['venues_page','speakers_page','sessions_page','venue_agent','speaker_agent','scheduler','operations_analytics'] }}">
+          Operations <i class="fa-solid fa-chevron-down nav-caret"></i>
+        </a>
+        <div class="nav-dropdown-menu">
+          <a href="{{ url_for('venues_page') }}"><i class="fa-solid fa-building"></i> Venue Management</a>
+          <a href="{{ url_for('speakers_page') }}"><i class="fa-solid fa-microphone"></i> Speaker Management</a>
+          <a href="{{ url_for('sessions_page') }}"><i class="fa-solid fa-list-check"></i> Session Management</a>
+          <a href="{{ url_for('scheduler') }}"><i class="fa-solid fa-calendar-days"></i> Smart Scheduler</a>
+          <a href="{{ url_for('venue_agent') }}"><i class="fa-solid fa-robot"></i> Venue Agent</a>
+          <a href="{{ url_for('speaker_agent') }}"><i class="fa-solid fa-robot"></i> Speaker Agent</a>
+          <a href="{{ url_for('operations_analytics') }}"><i class="fa-solid fa-chart-pie"></i> Session Analytics</a>
+        </div>
+      </li>
+      <li class="nav-dropdown">
+        <a href="#" class="{{ 'active' if request.endpoint in ['milestone3_dashboard','sponsor_agent','sponsors_page','sponsor_profile','sponsor_outreach','sponsor_followups_page','sponsor_performance','incident_agent','incidents_page','report_incident','incident_detail','alerts_page'] }}">
+          Sponsorship &amp; Incidents <i class="fa-solid fa-chevron-down nav-caret"></i>
+          {% if alert_counts.get('unread') %}<span class="alert-badge-count">{{ alert_counts.unread }}</span>{% endif %}
+        </a>
+        <div class="nav-dropdown-menu">
+          <a href="{{ url_for('milestone3_dashboard') }}"><i class="fa-solid fa-gauge"></i> Milestone 3 Dashboard</a>
+          <a href="{{ url_for('sponsor_agent') }}"><i class="fa-solid fa-robot"></i> Sponsorship Agent</a>
+          <a href="{{ url_for('sponsors_page') }}"><i class="fa-solid fa-magnifying-glass-dollar"></i> Find / Manage Sponsors</a>
+          <a href="{{ url_for('sponsor_outreach') }}"><i class="fa-solid fa-paper-plane"></i> Sponsor Outreach</a>
+          <a href="{{ url_for('sponsor_followups_page') }}"><i class="fa-solid fa-clock-rotate-left"></i> Follow-Up Management</a>
+          <a href="{{ url_for('sponsor_performance') }}"><i class="fa-solid fa-chart-pie"></i> Sponsor Performance</a>
+          <a href="{{ url_for('incident_agent') }}"><i class="fa-solid fa-robot"></i> Incident Agent</a>
+          <a href="{{ url_for('incidents_page') }}"><i class="fa-solid fa-list-check"></i> Incident Management</a>
+          <a href="{{ url_for('alerts_page') }}"><i class="fa-solid fa-bell-concierge"></i> Operational Alerts
+            {% if alert_counts.get('unread') %}<span class="alert-badge-count">{{ alert_counts.unread }}</span>{% endif %}
+          </a>
+        </div>
+      </li>
+      <li class="nav-dropdown">
+        <a href="#" class="{{ 'active' if request.endpoint in ['event_intelligence_page','executive_dashboard','decision_support_page','agent_orchestration_page','risk_center_page','system_health_page','executive_report_page'] }}">
+          Intelligence <i class="fa-solid fa-chevron-down nav-caret"></i>
+        </a>
+        <div class="nav-dropdown-menu">
+          <a href="{{ url_for('event_intelligence_page') }}"><i class="fa-solid fa-brain"></i> Event Intelligence</a>
+          <a href="{{ url_for('executive_dashboard') }}"><i class="fa-solid fa-chart-line"></i> Executive Dashboard</a>
+          <a href="{{ url_for('decision_support_page') }}"><i class="fa-solid fa-comments"></i> Decision Support</a>
+          <a href="{{ url_for('agent_orchestration_page') }}"><i class="fa-solid fa-diagram-project"></i> Agent Orchestration</a>
+          <a href="{{ url_for('risk_center_page') }}"><i class="fa-solid fa-triangle-exclamation"></i> Risk Center</a>
+          <a href="{{ url_for('system_health_page') }}"><i class="fa-solid fa-heart-pulse"></i> System Health</a>
+        </div>
+      </li>
+      {% endif %}
+      <li><a href="{{ url_for('contact') }}" class="{{ 'active' if request.endpoint=='contact' }}">Contact</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="live-clock" id="liveClock"><i class="fa-regular fa-clock"></i> <span id="clockText">--:--:--</span></div>
+      <button class="icon-btn" id="themeToggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      {% if session.get('admin_id') %}
+      <div class="profile-menu">
+        <button class="icon-btn profile-btn" id="profileBtn">
+          <i class="fa-solid fa-circle-user"></i>
+        </button>
+        <div class="profile-dropdown" id="profileDropdown">
+          <p class="profile-name">{{ session.get('admin_name') }}</p>
+          <p class="profile-role">{{ session.get('role')|capitalize }}</p>
+          <hr>
+          <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+          <a href="{{ url_for('attendees') }}"><i class="fa-solid fa-users"></i> Attendees</a>
+          <a href="{{ url_for('reports') }}"><i class="fa-solid fa-file-export"></i> Reports</a>
+          <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-gradient btn-sm">Login <i class="fa-solid fa-arrow-right-to-bracket"></i></a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- Flash Messages -->
+<div class="toast-container" id="toastContainer">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="toast toast-{{ category }}">
+          <i class="fa-solid {{ 'fa-circle-check' if category=='success' else 'fa-circle-exclamation' }}"></i>
+          <span>{{ message }}</span>
+          <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-col">
+      <div class="nav-logo"><i class="fa-solid fa-brain"></i> <span>Register<b>AI</b></span></div>
+      <p>An AI-powered registration intelligence and attendee management platform built for
+      the Infosys Springboard Virtual Internship — Milestone 1.</p>
+      <div class="social-icons">
+        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('about') }}">About Project</a>
+      <a href="{{ url_for('register') }}">Register</a>
+      <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="{{ url_for('login') }}">Admin Login</a>
+      <a href="{{ url_for('login') }}">Organizer Login</a>
+      <a href="{{ url_for('about') }}#tech">Tech Stack</a>
+      <a href="{{ url_for('about') }}#architecture">Architecture</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Info</h4>
+      <p><i class="fa-solid fa-location-dot"></i> Infosys Springboard, Bengaluru, India</p>
+      <p><i class="fa-solid fa-envelope"></i> support@registerai.dev</p>
+      <p><i class="fa-solid fa-phone"></i> +91 98765 43210</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; <span id="year"></span> RegisterAI — Infosys Springboard Virtual Internship Milestone 1. All rights reserved.</p>
+  </div>
+</footer>
+
+<button id="scrollTopBtn" title="Scroll to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

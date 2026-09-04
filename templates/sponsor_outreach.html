@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Sponsor Outreach{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Sponsor Outreach Management</h1>
+        <p>Approach a shortlisted sponsor: generate a proposal message, copy it, send it through your own channel, then record it.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sponsors_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-building"></i> Sponsor Directory</a>
+      </div>
+    </div>
+
+    <div class="outreach-steps" data-aos="fade-up">
+      <div class="outreach-step done"><b>1. Select Sponsor</b>Pick who to approach</div>
+      <div class="outreach-step done"><b>2. Generate Message</b>Draft a proposal</div>
+      <div class="outreach-step"><b>3. Copy Message</b>Ready to send</div>
+      <div class="outreach-step"><b>4. Send Yourself</b>Via email/LinkedIn/etc.</div>
+      <div class="outreach-step"><b>5. Record as Sent</b>Log it in the system</div>
+    </div>
+
+    <div class="glass agent-form" data-aos="fade-up">
+      <div class="form-group">
+        <label>Sponsor to Approach</label>
+        <select id="outreachSponsorSelect">
+          <option value="">Select a sponsor...</option>
+          {% for s in sponsors %}
+          <option value="{{ s.id }}" {{ 'selected' if preselect_id==s.id }}
+            data-company="{{ s.company_name }}" data-industry="{{ s.industry }}"
+            data-contact="{{ s.contact_person }}" data-email="{{ s.contact_email }}"
+            data-score="{{ s.suitability_score }}">
+            {{ s.company_name }} ({{ s.suitability_score or 0 }}% — {{ s.status }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="outreachSponsorInfo" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;"></div>
+
+      <div class="form-grid two">
+        <div class="form-group"><label>Contact Person</label><input type="text" id="out_contact_person"></div>
+        <div class="form-group">
+          <label>Communication Method</label>
+          <select id="out_method">
+            {% for m in COMMUNICATION_METHODS %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sponsorship Package</label>
+          <select id="out_package">
+            {% for c in SPONSORSHIP_CATEGORIES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Requested Amount (₹)</label><input type="number" id="out_amount" min="0" placeholder="e.g. 150000"></div>
+        <div class="form-group"><label>Subject</label><input type="text" id="out_subject" placeholder="Sponsorship Opportunity — AI & ML Summit 2026"></div>
+        <div class="form-group"><label>Follow-up Date</label><input type="date" id="out_followup_date"></div>
+      </div>
+      <div class="form-group"><label>Key Benefits to Mention (optional)</label><input type="text" id="out_benefits" placeholder="e.g. booth space, logo placement, keynote mention"></div>
+
+      <button type="button" class="btn btn-gradient" id="generateMessageBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Sponsorship Approach Message</button>
+
+      <div class="form-group" style="margin-top:18px;">
+        <label>Generated Message (editable)</label>
+        <textarea id="messagePreview" class="message-preview" rows="14" placeholder="Click 'Generate Sponsorship Approach Message' above, or write your own here..."></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button type="button" class="btn btn-outline btn-sm" id="copyMessageBtn"><i class="fa-solid fa-copy"></i> Copy Message</button>
+        <button type="button" class="btn btn-outline btn-sm" id="saveDraftBtn"><i class="fa-solid fa-floppy-disk"></i> Save as Draft</button>
+        <button type="button" class="btn btn-gradient btn-sm" id="recordSentBtn"><i class="fa-solid fa-paper-plane"></i> Record as Sent</button>
+      </div>
+      <p style="font-size:0.76rem;color:var(--text-dim);margin-top:10px;">
+        <i class="fa-solid fa-circle-info"></i> RegisterAI does not send emails or messages automatically — copy the
+        message above and send it through your own email, LinkedIn, or phone, then click "Record as Sent" to log it
+        in this sponsor's communication history and mark them as Contacted.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initSponsorOutreach);</script>
+{% endblock %}

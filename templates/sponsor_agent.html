@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Sponsorship Agent{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Sponsorship Agent</h1>
+        <p>Rule-based suitability scoring engine for evaluating and ranking potential sponsors.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sponsors_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-building"></i> Manage Sponsors</a>
+      </div>
+    </div>
+
+    <div class="glass agent-intro" data-aos="fade-up">
+      <div class="agent-intro-icon"><i class="fa-solid fa-robot"></i></div>
+      <div>
+        <h3>How the Sponsorship Agent works</h3>
+        <p>Every sponsor in the directory is scored against the event profile using transparent rules:
+        industry relevance, target-audience compatibility, budget potential, sponsorship history and
+        strategic tier. The result is a 0–100% Suitability Score with a plain-language explanation and a
+        match category (Excellent / Good / Moderate / Low) — every recommendation can be explained.</p>
+      </div>
+    </div>
+
+    <form method="GET" class="glass agent-form" data-aos="fade-up" style="display:flex;gap:14px;align-items:end;flex-wrap:wrap;">
+      <div class="form-group" style="min-width:220px;">
+        <label>Filter by Industry</label>
+        <select name="industry" onchange="this.form.submit()">
+          <option value="">All Industries</option>
+          {% for ind in INDUSTRIES %}
+          <option value="{{ ind }}" {{ 'selected' if industry_filter==ind }}>{{ ind }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button type="submit" class="btn btn-gradient btn-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> Run Agent</button>
+      </div>
+    </form>
+
+    <div data-aos="fade-up">
+      <div class="agent-results-header">
+        <h3><i class="fa-solid fa-list-ol"></i> Recommendation Results ({{ results|length }} sponsor(s) evaluated)</h3>
+      </div>
+
+      {% if not results %}
+      <div class="glass" style="padding:30px;text-align:center;color:var(--text-dim);">
+        No sponsors found. Add sponsors first via Find / Manage Sponsors.
+      </div>
+      {% else %}
+      <div class="reco-cards">
+        {% for r in results %}
+        <div class="glass reco-card {{ 'is-recommended' if r.score >= 80 }}">
+          <div class="reco-card-top">
+            <div class="reco-card-title">
+              <div class="reco-rank">{{ loop.index }}</div>
+              <div>
+                <h4>{{ r.sponsor.company_name }} {% if r.score >= 80 %}<span class="badge badge-green">Recommended</span>{% endif %}</h4>
+                <span>{{ r.sponsor.industry or 'Industry N/A' }} · {{ r.sponsor.location or 'Location N/A' }} · {{ r.sponsor.sponsorship_category or 'Category N/A' }}</span>
+              </div>
+            </div>
+            <div class="reco-score">
+              <span class="badge {{ 'badge-match-excellent' if r.match_category=='Excellent Match' else 'badge-match-good' if r.match_category=='Good Match' else 'badge-match-moderate' if r.match_category=='Moderate Match' else 'badge-match-low' }}">{{ r.match_category }}</span>
+              <div class="reco-score-bar-outer"><div class="reco-score-bar-inner" style="width:{{ r.score }}%;"></div></div>
+              <span class="reco-score-val">{{ r.score }}%</span>
+            </div>
+          </div>
+          <div class="explanation-box">{{ r.explanation }}</div>
+          <div class="reco-reasons" style="margin-top:10px;grid-template-columns:1fr;">
+            <ul>
+              {% for reason in r.reasons %}
+              <li class="pass"><i class="fa-solid fa-circle-check"></i> {{ reason }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <a class="btn btn-outline btn-sm" href="{{ url_for('sponsor_profile', sponsor_id=r.sponsor.id) }}">
+              <i class="fa-solid fa-eye"></i> View Profile
+            </a>
+            <a class="btn btn-gradient btn-sm" href="{{ url_for('sponsor_outreach', sponsor_id=r.sponsor.id) }}">
+              <i class="fa-solid fa-paper-plane"></i> Approach Sponsor
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

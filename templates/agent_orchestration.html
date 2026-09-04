@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Agent Orchestration{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-diagram-project"></i> Agent Orchestration</h1>
+        <p>Real orchestration: the coordinator classifies your problem, invokes the relevant agents against live data, and synthesizes one recommendation.</p>
+      </div>
+    </div>
+
+    <div class="glass" style="padding:24px;" data-aos="fade-up">
+      <h3 style="margin-bottom:14px;"><i class="fa-solid fa-play"></i> Run the Orchestrator</h3>
+      <div class="quick-action-grid">
+        <div class="quick-action-btn" data-action="analyze_event_health"><i class="fa-solid fa-heart-pulse"></i> Event Health</div>
+        <div class="quick-action-btn" data-action="analyze_attendance"><i class="fa-solid fa-user-check"></i> Attendance</div>
+        <div class="quick-action-btn" data-action="find_venue"><i class="fa-solid fa-building"></i> Find Venue</div>
+        <div class="quick-action-btn" data-action="find_speaker"><i class="fa-solid fa-microphone"></i> Find Speaker</div>
+        <div class="quick-action-btn" data-action="check_schedule"><i class="fa-solid fa-calendar-days"></i> Check Schedule</div>
+        <div class="quick-action-btn" data-action="analyze_sponsorship"><i class="fa-solid fa-handshake"></i> Sponsorship</div>
+        <div class="quick-action-btn" data-action="analyze_incidents"><i class="fa-solid fa-triangle-exclamation"></i> Incidents</div>
+        <div class="quick-action-btn" data-action="generate_executive_summary"><i class="fa-solid fa-file-lines"></i> Executive Summary</div>
+      </div>
+      <div class="question-input-row">
+        <input type="text" id="problemInput" placeholder="Describe a problem, e.g. 'Attendance is expected to be 500 and the venue capacity is 400'">
+        <button class="btn btn-gradient" id="runOrchBtn"><i class="fa-solid fa-robot"></i> Run</button>
+      </div>
+      <div id="analyzingIndicator" class="analyzing-indicator" style="display:none;">
+        <span class="dot-spin"></span> Consulting agents...
+      </div>
+      <div id="orchResult"></div>
+    </div>
+
+    <div class="glass widget-card" data-aos="fade-up" style="margin-top:24px;">
+      <h3><i class="fa-solid fa-clock-rotate-left"></i> Agent Execution Log</h3>
+      <div style="overflow-x:auto;">
+        <table class="risk-table">
+          <thead><tr><th>Agent</th><th>Status</th><th>Execution Time</th><th>Task</th><th>Result</th><th>Timestamp</th></tr></thead>
+          <tbody id="executionLogBody">
+            {% for h in history %}
+            <tr>
+              <td>{{ h.agent_name }}</td>
+              <td>{{ '✓ Completed' if h.status == 'Completed' else '✗ Failed' }}</td>
+              <td>{{ h.duration_ms }} ms</td>
+              <td>{{ (h.request_text or '')[:60] }}</td>
+              <td>{{ (h.result_summary or '')[:80] }}</td>
+              <td>{{ h.started_at }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="muted">No orchestration runs yet. Use a quick action above to see the agents in action.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="glass widget-card" data-aos="fade-up" style="margin-top:24px;">
+      <h3><i class="fa-solid fa-scale-balanced"></i> Recent Decisions</h3>
+      <ul class="recent-list">
+        {% for d in decisions %}
+        <li><div class="avatar"><i class="fa-solid fa-gavel"></i></div><div class="recent-info"><b>{{ d.question }}</b><span>{{ d.recommendation }}</span></div></li>
+        {% else %}
+        <li class="muted">No decisions logged yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/agent_orchestration.js') }}"></script>
+{% endblock %}

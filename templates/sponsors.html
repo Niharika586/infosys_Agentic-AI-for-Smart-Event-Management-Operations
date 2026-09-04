@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Sponsor Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Potential Sponsor Discovery</h1>
+        <p>Search the sponsor directory, record potential sponsors found through outreach or research, and manage status end-to-end.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sponsor_agent') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Sponsorship Agent</a>
+        <button class="btn btn-gradient btn-sm" id="addSponsorBtn"><i class="fa-solid fa-plus"></i> Add Sponsor</button>
+      </div>
+    </div>
+
+    <!-- Search & Filters (server-side, plain form) -->
+    <form method="GET" class="glass venue-search-panel" data-aos="fade-up">
+      <div class="search-box venue-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="q" value="{{ filters.q }}" placeholder="Search by company name, industry, location or keyword...">
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Industry</label>
+          <select name="industry">
+            <option value="">Any industry</option>
+            {% for ind in INDUSTRIES %}<option value="{{ ind }}" {{ 'selected' if filters.industry==ind }}>{{ ind }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Location</label>
+          <select name="location">
+            <option value="">Any location</option>
+            {% for loc in locations %}<option value="{{ loc }}" {{ 'selected' if filters.location==loc }}>{{ loc }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Sponsorship Category</label>
+          <select name="category">
+            <option value="">Any category</option>
+            {% for c in SPONSORSHIP_CATEGORIES %}<option value="{{ c }}" {{ 'selected' if filters.category==c }}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Budget Potential</label>
+          <select name="budget">
+            <option value="">Any budget</option>
+            {% for b in BUDGET_LEVELS %}<option value="{{ b }}" {{ 'selected' if filters.budget==b }}>{{ b }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select name="status">
+            <option value="">Any status</option>
+            {% for st in SPONSOR_STATUSES %}<option value="{{ st }}" {{ 'selected' if filters.status==st }}>{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Sort By</label>
+          <select name="sort">
+            <option value="score_desc" {{ 'selected' if filters.sort=='score_desc' }}>Suitability Score (High-Low)</option>
+            <option value="score_asc" {{ 'selected' if filters.sort=='score_asc' }}>Suitability Score (Low-High)</option>
+            <option value="name" {{ 'selected' if filters.sort=='name' }}>Company Name (A-Z)</option>
+            <option value="budget_desc" {{ 'selected' if filters.sort=='budget_desc' }}>Budget Potential (High-Low)</option>
+            <option value="recent" {{ 'selected' if filters.sort=='recent' }}>Recently Added</option>
+          </select>
+        </div>
+        <div class="filter-group filter-group-reset">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-gradient btn-sm"><i class="fa-solid fa-filter"></i> Apply</button>
+        </div>
+        <div class="filter-group filter-group-reset">
+          <label>&nbsp;</label>
+          <a href="{{ url_for('sponsors_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="venue-results-meta" data-aos="fade-up">
+      <span>{{ sponsors|length }} sponsor(s) found</span>
+    </div>
+
+    <!-- Sponsor Cards Grid -->
+    <div class="sponsor-cards-grid" id="sponsorCardsGrid" data-aos="fade-up">
+      {% for s in sponsors %}
+      <div class="glass sponsor-card" data-id="{{ s.id }}">
+        <div class="sponsor-card-top">
+          <div>
+            <h4>{{ s.company_name }}</h4>
+            <p class="sponsor-card-sub">{{ s.industry or 'N/A' }} · {{ s.location or 'N/A' }}</p>
+          </div>
+          <span class="badge {{ 'badge-green' if s.status=='Confirmed' else 'badge-red' if s.status in ['Rejected','Inactive'] else 'badge-yellow' if s.status in ['Follow-up Required','Negotiating','Awaiting Response'] else 'badge-blue' }}">{{ s.status }}</span>
+        </div>
+        <div class="sponsor-score-row">
+          <div class="sponsor-score-bar-outer"><div class="sponsor-score-bar-inner" style="width:{{ s.suitability_score or 0 }}%;"></div></div>
+          <span class="sponsor-score-val">{{ s.suitability_score or 0 }}%</span>
+        </div>
+        <div class="sponsor-card-stats">
+          <span><i class="fa-solid fa-tags"></i> {{ s.sponsorship_category or 'N/A' }}</span>
+          <span><i class="fa-solid fa-sack-dollar"></i> {{ s.budget_potential or 'N/A' }}</span>
+        </div>
+        {% if s.match_category %}<span class="badge {{ 'badge-match-excellent' if s.match_category=='Excellent Match' else 'badge-match-good' if s.match_category=='Good Match' else 'badge-match-moderate' if s.match_category=='Moderate Match' else 'badge-match-low' }}" style="width:fit-content;">{{ s.match_category }}</span>{% endif %}
+        <div class="sponsor-card-actions">
+          <a href="{{ url_for('sponsor_profile', sponsor_id=s.id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> Profile</a>
+          <a href="{{ url_for('sponsor_outreach', sponsor_id=s.id) }}" class="btn btn-gradient btn-xs"><i class="fa-solid fa-paper-plane"></i> Approach</a>
+          <button class="icon-action evaluate-sponsor-btn" title="Re-evaluate suitability"><i class="fa-solid fa-robot"></i></button>
+          <button class="icon-action edit-sponsor-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-action delete-sponsor-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      {% else %}
+      <div class="glass" style="padding:40px;text-align:center;color:var(--text-dim);grid-column:1/-1;">
+        No sponsors match your search and filters. Try adjusting them, or click "Add Sponsor" to record one you've discovered.
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<!-- Sponsor Add/Edit Modal -->
+<div class="modal-overlay" id="sponsorModal">
+  <div class="glass modal-box wide">
+    <div class="modal-header"><h3 id="sponsorModalTitle">Add Potential Sponsor</h3><button id="closeSponsorModal">&times;</button></div>
+    <form id="sponsorForm">
+      <input type="hidden" id="sponsor_id">
+      <div class="form-grid two">
+        <div class="form-group"><label>Company Name</label><input type="text" id="sponsor_company_name" required></div>
+        <div class="form-group">
+          <label>Industry</label>
+          <select id="sponsor_industry">
+            <option value="">Select industry</option>
+            {% for ind in INDUSTRIES %}<option value="{{ ind }}">{{ ind }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Website</label><input type="text" id="sponsor_website" placeholder="https://"></div>
+        <div class="form-group"><label>Location</label><input type="text" id="sponsor_location"></div>
+        <div class="form-group"><label>Target Audience</label><input type="text" id="sponsor_target_audience" placeholder="e.g. students, developers"></div>
+        <div class="form-group"><label>Keywords</label><input type="text" id="sponsor_keywords" placeholder="comma-separated"></div>
+        <div class="form-group">
+          <label>Sponsorship Category</label>
+          <select id="sponsor_sponsorship_category">
+            <option value="">Select category</option>
+            {% for c in SPONSORSHIP_CATEGORIES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Budget Potential</label>
+          <select id="sponsor_budget_potential">
+            {% for b in BUDGET_LEVELS %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Estimated Budget (₹)</label><input type="number" id="sponsor_estimated_budget" min="0"></div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="sponsor_status">
+            {% for st in SPONSOR_STATUSES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Contact Person</label><input type="text" id="sponsor_contact_person"></div>
+        <div class="form-group"><label>Contact Email</label><input type="email" id="sponsor_contact_email"></div>
+        <div class="form-group"><label>Contact Phone</label><input type="text" id="sponsor_contact_phone"></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="sponsor_notes" rows="2"></textarea></div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Save Sponsor</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initSponsorTable);</script>
+{% endblock %}

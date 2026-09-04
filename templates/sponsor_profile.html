@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}{{ sponsor.company_name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="glass profile-header" data-aos="fade-up">
+      <div>
+        <h2>{{ sponsor.company_name }}
+          <span class="badge {{ 'badge-green' if sponsor.status=='Confirmed' else 'badge-red' if sponsor.status in ['Rejected','Inactive'] else 'badge-yellow' if sponsor.status in ['Follow-up Required','Negotiating','Awaiting Response'] else 'badge-blue' }}">{{ sponsor.status }}</span>
+        </h2>
+        <div class="profile-header-meta">
+          <span><i class="fa-solid fa-industry"></i> {{ sponsor.industry or 'N/A' }}</span>
+          <span><i class="fa-solid fa-location-dot"></i> {{ sponsor.location or 'N/A' }}</span>
+          <span><i class="fa-solid fa-tags"></i> {{ sponsor.sponsorship_category or 'N/A' }}</span>
+          <span><i class="fa-solid fa-sack-dollar"></i> {{ sponsor.budget_potential or 'N/A' }} (₹{{ '{:,}'.format(sponsor.estimated_budget or 0) }})</span>
+        </div>
+        {% if sponsor.score_explanation %}
+        <div class="explanation-box" style="margin-top:14px;">
+          <b>Suitability Score: {{ sponsor.suitability_score }}% — {{ sponsor.match_category }}</b><br>{{ sponsor.score_explanation }}
+        </div>
+        {% endif %}
+      </div>
+      <div class="profile-header-actions">
+        <a href="{{ url_for('sponsor_outreach', sponsor_id=sponsor.id) }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-paper-plane"></i> Approach Sponsor</a>
+        <a href="{{ url_for('sponsors_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Directory</a>
+      </div>
+    </div>
+
+    <div class="detail-grid glass" style="padding:20px 26px;" data-aos="fade-up">
+      <div><div class="detail-label">Contact Person</div><div class="detail-value">{{ sponsor.contact_person or '—' }}</div></div>
+      <div><div class="detail-label">Contact Email</div><div class="detail-value">{{ sponsor.contact_email or '—' }}</div></div>
+      <div><div class="detail-label">Contact Phone</div><div class="detail-value">{{ sponsor.contact_phone or '—' }}</div></div>
+      <div><div class="detail-label">Website</div><div class="detail-value">{{ sponsor.website or '—' }}</div></div>
+      <div><div class="detail-label">Target Audience</div><div class="detail-value">{{ sponsor.target_audience or '—' }}</div></div>
+      <div><div class="detail-label">Source</div><div class="detail-value">{{ sponsor.source or '—' }}</div></div>
+    </div>
+
+    <div class="charts-grid" data-aos="fade-up" style="margin-top:22px;">
+      <!-- Communication timeline -->
+      <div class="glass chart-card" style="grid-column: span 2;">
+        <h3><i class="fa-solid fa-timeline"></i> Communication History &amp; Activity Timeline</h3>
+        <div class="activity-timeline" style="margin-top:18px;">
+          {% for t in timeline %}
+          <div class="timeline-item">
+            <div class="timeline-item-head">
+              <h5>{{ t.interaction_type }} {% if t.communication_method %}· {{ t.communication_method }}{% endif %}</h5>
+              <span class="timeline-item-date">{{ t.created_at }}</span>
+            </div>
+            <div class="timeline-item-body">
+              {% if t.subject %}<b>{{ t.subject }}</b><br>{% endif %}
+              {{ t.message }}
+              {% if t.sponsor_response %}<div class="response-line"><i class="fa-solid fa-reply"></i> {{ t.sponsor_response }}</div>{% endif %}
+              {% if t.next_action %}<div style="margin-top:6px;color:var(--text-dim);"><i class="fa-solid fa-arrow-right"></i> Next: {{ t.next_action }} {% if t.follow_up_date %}(by {{ t.follow_up_date }}){% endif %}</div>{% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div class="timeline-empty">No communication recorded yet. Use the form to log the first interaction.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid" data-aos="fade-up" style="margin-top:22px;">
+      <!-- Record communication -->
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-comment-dots"></i> Record Communication</h3>
+        <form id="interactionForm" style="margin-top:16px;">
+          <div class="form-grid two">
+            <div class="form-group">
+              <label>Interaction Type</label>
+              <select id="int_type">
+                {% for it in ['Outreach','Response','Follow-Up','Negotiation','Confirmation','Rejection','Note'] %}
+                <option value="{{ it }}">{{ it }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Communication Method</label>
+              <select id="int_method">
+                {% for m in COMMUNICATION_METHODS %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Subject</label><input type="text" id="int_subject"></div>
+          <div class="form-group"><label>Notes / Message</label><textarea id="int_message" rows="2"></textarea></div>
+          <div class="form-group"><label>Sponsor Response</label><textarea id="int_response" rows="2" placeholder="What did the sponsor say back?"></textarea></div>
+          <div class="form-grid two">
+            <div class="form-group"><label>Next Action</label><input type="text" id="int_next_action" placeholder="e.g. Send proposal"></div>
+            <div class="form-group"><label>Follow-up Date</label><input type="date" id="int_followup_date"></div>
+          </div>
+          <div class="form-group">
+            <label>Update Sponsor Status</label>
+            <select id="int_new_status">
+              <option value="">Keep current status</option>
+              {% for st in SPONSOR_STATUSES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Save Communication</button>
+        </form>
+      </div>
+
+      <!-- Follow-up + Opportunity -->
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-calendar-plus"></i> Schedule Follow-Up</h3>
+        <form id="followupForm" style="margin-top:16px;">
+          <div class="form-grid two">
+            <div class="form-group"><label>Due Date</label><input type="date" id="fu_date" required></div>
+            <div class="form-group"><label>Reason</label><input type="text" id="fu_reason" placeholder="What to follow up on"></div>
+          </div>
+          <button type="submit" class="btn btn-outline btn-block"><i class="fa-solid fa-bell"></i> Schedule Follow-Up</button>
+        </form>
+
+        <h3 style="margin-top:26px;"><i class="fa-solid fa-file-signature"></i> Sponsorship Package / Outcome</h3>
+        <form id="opportunityForm" style="margin-top:16px;">
+          <div class="form-group"><label>Package</label><input type="text" id="opp_package" placeholder="e.g. Gold Sponsor" value="{{ sponsor.sponsorship_category or '' }}"></div>
+          <div class="form-group"><label>Benefits</label><textarea id="opp_benefits" rows="2" placeholder="Logo placement, booth, mentions..."></textarea></div>
+          <div class="form-grid three">
+            <div class="form-group"><label>Requested (₹)</label><input type="number" id="opp_requested" min="0"></div>
+            <div class="form-group"><label>Committed (₹)</label><input type="number" id="opp_committed" min="0"></div>
+            <div class="form-group"><label>Received (₹)</label><input type="number" id="opp_received" min="0"></div>
+          </div>
+          <div class="form-grid two">
+            <div class="form-group">
+              <label>Status</label>
+              <select id="opp_status">
+                {% for st in OPPORTUNITY_STATUSES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="form-group"><label>Confirmed Date</label><input type="date" id="opp_confirmed_date"></div>
+          </div>
+          <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Record Sponsorship Outcome</button>
+        </form>
+
+        {% if opportunities %}
+        <div style="margin-top:20px;">
+          <h4 style="font-size:0.9rem;margin-bottom:10px;">Recorded Opportunities</h4>
+          {% for o in opportunities %}
+          <div class="slot-chip" style="min-width:auto;margin-bottom:8px;">
+            <b>{{ o.package or 'Sponsorship' }} — {{ o.status }}</b>
+            <span>Requested ₹{{ '{:,.0f}'.format(o.amount_requested) }} · Committed ₹{{ '{:,.0f}'.format(o.amount_committed) }} · Received ₹{{ '{:,.0f}'.format(o.amount_received) }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', function () { initSponsorProfile({{ sponsor.id }}); });</script>
+{% endblock %}

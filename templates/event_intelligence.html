@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Event Intelligence{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-brain"></i> Event Intelligence Engine</h1>
+        <p>A centralized engine that combines registration, venue, speaker, sponsorship, incident and alert data into one explainable score.</p>
+      </div>
+      <div class="dash-header-actions">
+        <button class="btn btn-gradient btn-sm" id="analyzeBtn"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze Event</button>
+      </div>
+    </div>
+
+    {% if not snapshot.has_data %}
+    <div class="glass ai-insight-card" data-aos="fade-up">
+      <div class="ai-insight-icon"><i class="fa-solid fa-circle-info"></i></div>
+      <div><h3>No data available yet</h3><p>Add registrations, venues, speakers or sponsors to see the Event Intelligence Engine generate a real score.</p></div>
+    </div>
+    {% endif %}
+
+    <div class="dash-cards" data-aos="fade-up" style="grid-template-columns: 1.4fr 1fr 1fr 1fr;">
+      <div class="glass health-score-card">
+        <div class="health-ring">
+          <svg viewBox="0 0 120 120">
+            <defs><linearGradient id="healthGradient2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6c5ce7"/><stop offset="100%" stop-color="#00d4ff"/></linearGradient></defs>
+            <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+            <circle class="ring-fg" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="{{ 314 - (314 * snapshot.health_score / 100) }}"></circle>
+          </svg>
+          <div class="ring-label"><b id="scoreVal">{{ snapshot.health_score }}</b><span>/ 100</span></div>
+        </div>
+        <div>
+          {% set label_class = {'Excellent':'badge-excellent','Healthy':'badge-healthy','Attention Required':'badge-attention','Critical':'badge-critical'} %}
+          <span class="badge-label {{ label_class.get(snapshot.health_label, 'badge-healthy') }}">{{ snapshot.health_label }}</span>
+          <h3 style="margin-top:8px;">Overall Event Health</h3>
+        </div>
+      </div>
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-list-check"></i></div><div><h3>{{ snapshot.readiness_score }}/100</h3><p>Event Readiness</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon teal"><i class="fa-solid fa-chart-line"></i></div><div><h3>{{ snapshot.totals.expected_attendance_pct }}%</h3><p>Attendance Forecast</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-user-slash"></i></div><div><h3>{{ snapshot.totals.no_show_high_risk }}</h3><p>No-show Risk Summary</p></div></div>
+    </div>
+
+    <!-- Why this score? -->
+    <div class="glass widget-card" data-aos="fade-up">
+      <h3><i class="fa-solid fa-calculator"></i> Event Health Score Breakdown</h3>
+      <span class="why-score-toggle" id="whyToggle">Why this score? <i class="fa-solid fa-chevron-down"></i></span>
+      <div class="component-bars" id="componentBars" style="margin-top:16px; display:none;">
+        {% for key, c in snapshot.components.items() %}
+        <div>
+          <div class="component-row">
+            <span class="comp-name">{{ key.replace('_',' ')|title }} ({{ c.weight }}%)</span>
+            <div class="component-track"><div class="component-fill" style="width:{{ c.score }}%;"></div></div>
+            <span class="comp-score">{{ c.score }}/100</span>
+          </div>
+          <div class="component-explain">{{ c.explanation }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <div class="glass ai-insight-card" data-aos="fade-up">
+      <div class="ai-insight-icon"><i class="fa-solid fa-file-lines"></i></div>
+      <div><h3>Executive Summary</h3><p id="execSummaryText">{{ snapshot.executive_summary }}</p></div>
+    </div>
+
+    <div class="dash-bottom-grid" data-aos="fade-up">
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-chart-line"></i> Registration Trend</h3>
+        <canvas id="regTrendChart2"></canvas>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-triangle-exclamation"></i> Key Risks</h3>
+        <ul class="recent-list" id="keyRisksList">
+          {% for r in snapshot.key_risks %}<li><div class="avatar" style="background:#ef4444;">!</div><div class="recent-info"><b>{{ r }}</b></div></li>{% endfor %}
+        </ul>
+      </div>
+      <div class="glass widget-card">
+        <h3><i class="fa-solid fa-lightbulb"></i> Priority Recommendations</h3>
+        <ul class="recent-list" id="recsList">
+          {% for r in snapshot.recommendations %}
+          <li><div class="avatar">{{ r.priority[0] }}</div><div class="recent-info"><b>{{ r.area }}</b><span>{{ r.text }}</span></div></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const regTrend = {{ snapshot.registration_trend|tojson }};
+new Chart(document.getElementById('regTrendChart2'), {
+  type: 'line',
+  data: { labels: regTrend.labels, datasets: [{ label: 'Registrations', data: regTrend.data, borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.15)', tension: 0.35, fill: true }] },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+});
+
+document.getElementById('whyToggle').addEventListener('click', function () {
+  const el = document.getElementById('componentBars');
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? 'flex' : 'none';
+  el.style.flexDirection = 'column';
+  this.innerHTML = isHidden ? 'Hide breakdown <i class="fa-solid fa-chevron-up"></i>' : 'Why this score? <i class="fa-solid fa-chevron-down"></i>';
+});
+
+document.getElementById('analyzeBtn').addEventListener('click', async function () {
+  const btn = this;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/intelligence/summary');
+    const json = await res.json();
+    if (json.success) {
+      document.getElementById('scoreVal').textContent = json.data.health_score;
+      document.getElementById('execSummaryText').textContent = json.data.executive_summary;
+    }
+  } finally {
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; location.reload(); }, 600);
+  }
+});
+</script>
+{% endblock %}

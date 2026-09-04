@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+
+<section class="page-hero small">
+  <div class="container" data-aos="fade-up">
+    <span class="badge-pill"><i class="fa-solid fa-envelope"></i> Get In Touch</span>
+    <h1>Contact <span class="gradient-text">Us</span></h1>
+    <p>Have a question about the platform or want to collaborate? Reach out below.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container contact-grid">
+    <div class="glass pad-card" data-aos="fade-right">
+      <h3><i class="fa-solid fa-paper-plane"></i> Send a Message</h3>
+      <form method="POST" action="{{ url_for('contact') }}">
+        <div class="form-group">
+          <label for="cname">Full Name *</label>
+          <input type="text" id="cname" name="name" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label for="cemail">Email Address *</label>
+          <input type="email" id="cemail" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="csubject">Subject</label>
+          <input type="text" id="csubject" name="subject" placeholder="What is this regarding?">
+        </div>
+        <div class="form-group">
+          <label for="cmessage">Message *</label>
+          <textarea id="cmessage" name="message" rows="5" placeholder="Write your message here..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+      </form>
+    </div>
+
+    <div data-aos="fade-left">
+      <div class="glass pad-card">
+        <h3><i class="fa-solid fa-location-dot"></i> Our Location</h3>
+        <div class="map-embed">
+          <iframe
+            src="https://www.google.com/maps?q=Infosys%20Springboard%20Bengaluru&output=embed"
+            width="100%" height="280" style="border:0; border-radius:16px;"
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+      </div>
+
+      <div class="glass pad-card mt-24">
+        <h3><i class="fa-solid fa-address-book"></i> Contact Info</h3>
+        <p><i class="fa-solid fa-location-dot"></i> Infosys Springboard, Electronic City, Bengaluru, Karnataka, India</p>
+        <p><i class="fa-solid fa-envelope"></i> support@registerai.dev</p>
+        <p><i class="fa-solid fa-phone"></i> +91 98765 43210</p>
+        <div class="social-icons mt-16">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

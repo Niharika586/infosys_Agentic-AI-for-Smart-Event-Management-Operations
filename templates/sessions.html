@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Session Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Session Management</h1>
+        <p>Create sessions and link venues and speakers — conflicts are checked automatically before confirming.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('scheduler') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-calendar-days"></i> Smart Scheduler</a>
+        <button class="btn btn-gradient btn-sm" id="addSessionBtn"><i class="fa-solid fa-plus"></i> Create Session</button>
+      </div>
+    </div>
+
+    <div class="glass table-wrap" data-aos="fade-up">
+      <table class="data-table" id="sessionTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Title</th><th>Type</th><th>Date</th><th>Time</th>
+            <th>Venue</th><th>Speaker</th><th>Attendees</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sessionBody">
+          {% for s in sessions %}
+          <tr data-id="{{ s.id }}" data-title="{{ s.title }}" data-description="{{ s.description }}"
+              data-type="{{ s.session_type }}" data-date="{{ s.session_date }}" data-start="{{ s.start_time }}"
+              data-end="{{ s.end_time }}" data-attendees="{{ s.expected_attendees }}"
+              data-venueid="{{ s.venue_id or '' }}" data-speakerid="{{ s.speaker_id or '' }}"
+              data-status="{{ s.status }}" data-facilities="{{ s.required_facilities }}">
+            <td>{{ s.id }}</td>
+            <td><b>{{ s.title }}</b></td>
+            <td>{{ s.session_type or '-' }}</td>
+            <td>{{ s.session_date }}</td>
+            <td>{{ s.start_time }} - {{ s.end_time }}</td>
+            <td>{{ s.venue_name or '—' }}</td>
+            <td>{{ s.speaker_name or '—' }}</td>
+            <td>{{ s.expected_attendees }}</td>
+            <td><span class="status-pill status-{{ s.status }}"><i class="fa-solid fa-circle"></i> {{ s.status }}</span></td>
+            <td class="action-cell">
+              <button class="icon-action edit-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button class="icon-action delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="10" class="muted center">No sessions created yet. Click "Create Session" to get started.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- Session Add/Edit Modal -->
+<div class="modal-overlay" id="sessionModal">
+  <div class="glass modal-box wide">
+    <div class="modal-header"><h3 id="sessionModalTitle">Create Session</h3><button id="closeSessionModal">&times;</button></div>
+    <div class="conflict-alert" id="sessionFormError" style="display:none;">
+      <i class="fa-solid fa-triangle-exclamation"></i><span id="sessionFormErrorText"></span>
+    </div>
+    <form id="sessionForm">
+      <input type="hidden" id="sessionId">
+      <div class="form-group"><label>Session Title</label><input type="text" id="sessionTitle" required></div>
+      <div class="form-group"><label>Description</label><textarea id="sessionDescription" rows="2"></textarea></div>
+      <div class="form-grid three">
+        <div class="form-group">
+          <label>Session Type</label>
+          <select id="sessionType">
+            <option value="">Select type</option>
+            {% for st in SESSION_TYPES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Date</label><input type="date" id="sessionDate" required></div>
+        <div class="form-group"><label>Expected Attendees</label><input type="number" id="sessionAttendees" min="0"></div>
+      </div>
+      <div class="form-grid two">
+        <div class="form-group"><label>Start Time</label><input type="time" id="sessionStart" required></div>
+        <div class="form-group"><label>End Time</label><input type="time" id="sessionEnd" required></div>
+      </div>
+      <div class="form-grid two">
+        <div class="form-group">
+          <label>Venue</label>
+          <select id="sessionVenue">
+            <option value="">— Unassigned —</option>
+            {% for v in venues %}<option value="{{ v.id }}">{{ v.name }} (cap. {{ v.capacity }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Speaker</label>
+          <select id="sessionSpeaker">
+            <option value="">— Unassigned —</option>
+            {% for sp in speakers %}<option value="{{ sp.id }}">{{ sp.name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Required Facilities</label>
+        <div class="checkbox-grid">
+          {% for f in FACILITIES_LIST %}
+          <label class="checkbox-chip"><input type="checkbox" name="required_facilities" value="{{ f }}"> {{ f }}</label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="sessionStatus">
+          {% for st in SESSION_STATUSES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Save &amp; Check Conflicts</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initSessionTable);</script>
+{% endblock %}

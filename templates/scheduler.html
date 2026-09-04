@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Smart Scheduler{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Smart Scheduler</h1>
+        <p>A centralized view combining events, venues, speakers, sessions and time — conflicts are automatically prevented at creation time.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('sessions_page') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-plus"></i> New Session</a>
+      </div>
+    </div>
+
+    <div class="glass scheduler-toolbar" data-aos="fade-up">
+      <label style="font-size:0.85rem;color:var(--text-muted);">Viewing schedule for:</label>
+      <input type="date" id="schedulerDate" value="{{ selected_date }}">
+      {% if upcoming_dates %}
+      <div class="date-chip-row">
+        {% for d in upcoming_dates %}
+        <a class="date-chip {{ 'active' if d==selected_date }}" href="{{ url_for('scheduler') }}?date={{ d }}">{{ d }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="venue-schedule-grid" data-aos="fade-up">
+      {% for row in venue_rows %}
+      <div class="glass venue-schedule-row">
+        <div class="venue-schedule-head">
+          <h4><i class="fa-solid fa-building"></i> {{ row.venue.name }} <span class="muted" style="font-weight:400;">· cap. {{ row.venue.capacity }}</span></h4>
+          {% if row.venue.status == 'Maintenance' %}
+          <span class="badge badge-gray">Maintenance</span>
+          {% elif row.sessions %}
+          <span class="badge badge-yellow">Reserved</span>
+          {% else %}
+          <span class="badge badge-green">Available</span>
+          {% endif %}
+        </div>
+        <div class="venue-schedule-slots">
+          {% for s in row.sessions %}
+          <div class="slot-chip">
+            <b>{{ s.start_time }} - {{ s.end_time }}</b>
+            <span>{{ s.title }}</span>
+            <span>{{ s.speaker_name or 'No speaker' }}</span>
+          </div>
+          {% else %}
+          <div class="slot-empty">No sessions scheduled in this venue on {{ selected_date }}.</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="glass" style="padding:30px;text-align:center;color:var(--text-dim);">
+        No venues added yet. Add venues in Venue Management to see the schedule here.
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="glass table-wrap" style="margin-top:26px;" data-aos="fade-up">
+      <h3 style="padding:20px 20px 0;font-size:1.05rem;"><i class="fa-solid fa-list"></i> All Sessions on {{ selected_date }}</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>Time</th><th>Title</th><th>Type</th><th>Venue</th><th>Speaker</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for s in day_sessions %}
+          <tr>
+            <td>{{ s.start_time }} - {{ s.end_time }}</td>
+            <td><b>{{ s.title }}</b></td>
+            <td>{{ s.session_type or '-' }}</td>
+            <td>{{ s.venue_name or '—' }}</td>
+            <td>{{ s.speaker_name or '—' }}</td>
+            <td><span class="status-pill status-{{ s.status }}"><i class="fa-solid fa-circle"></i> {{ s.status }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="muted center">No sessions scheduled for this date.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initScheduler);</script>
+{% endblock %}

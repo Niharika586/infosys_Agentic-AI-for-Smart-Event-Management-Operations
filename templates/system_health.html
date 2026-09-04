@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}System Health{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-heart-pulse"></i> System Health</h1>
+        <p>Production readiness at a glance — application, database, intelligence engine, orchestrator and APIs.</p>
+      </div>
+    </div>
+
+    <div class="glass widget-card" data-aos="fade-up">
+      <h3><i class="fa-solid fa-server"></i> Component Status</h3>
+      <div class="health-check-list">
+        {% for c in health.components %}
+        <div class="health-check-item">
+          <span>{{ c.name }}</span>
+          <span class="{{ 'status-ok' if c.status in ['Healthy','Connected','Running','Operational'] else 'status-bad' }}">
+            <i class="fa-solid {{ 'fa-circle-check' if c.status in ['Healthy','Connected','Running','Operational'] else 'fa-circle-xmark' }}"></i> {{ c.status }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up" style="margin-top:22px;">
+      <div class="dcard glass"><div class="dcard-icon teal"><i class="fa-solid fa-gauge"></i></div><div><h3>{{ health.response_time_ms }} ms</h3><p>Response Time</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-bell"></i></div><div><h3>{{ health.active_alerts if health.active_alerts is not none else 'N/A' }}</h3><p>Active Alerts</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-clock"></i></div><div><h3 style="font-size:0.95rem;">{{ health.last_intelligence_update }}</h3><p>Last Intelligence Update</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-code-branch"></i></div><div><h3>{{ health.version }}</h3><p>Version</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon indigo"><i class="fa-solid fa-globe"></i></div><div><h3>{{ health.environment }}</h3><p>Environment</p></div></div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

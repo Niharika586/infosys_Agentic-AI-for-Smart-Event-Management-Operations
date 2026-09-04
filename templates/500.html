@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Server Error{% endblock %}
+{% block content %}
+<section class="section" style="min-height:60vh; display:flex; align-items:center; justify-content:center; text-align:center;">
+  <div>
+    <h1 style="font-size:6rem;" class="gradient-text">500</h1>
+    <h2>Something Went Wrong</h2>
+    <p class="section-sub">An unexpected error occurred on our end. Please try again shortly.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-gradient">Back to Home</a>
+  </div>
+</section>
+{% endblock %}

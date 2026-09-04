@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Event Schedule{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Event Schedule</h1>
+        <p>Browse all sessions, their venues, timing and speakers.</p>
+      </div>
+    </div>
+
+    {% if not sessions %}
+    <div class="glass" style="padding:40px;text-align:center;color:var(--text-dim);" data-aos="fade-up">
+      <i class="fa-solid fa-calendar-xmark" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
+      The full schedule hasn't been published yet. Please check back soon.
+    </div>
+    {% endif %}
+
+    {% for d in dates %}
+    <div class="public-schedule-day" data-aos="fade-up">
+      <h3><i class="fa-solid fa-calendar-day"></i> {{ d }}</h3>
+      <div class="session-card-list">
+        {% for s in sessions %}
+        {% if s.session_date == d %}
+        <div class="glass session-card">
+          <div class="session-card-left">
+            <div class="session-time-block">
+              <b>{{ s.start_time }}</b>
+              <span>to {{ s.end_time }}</span>
+            </div>
+            <div class="session-card-info">
+              <h4>{{ s.title }}</h4>
+              <p>
+                <span><i class="fa-solid fa-tag"></i> {{ s.session_type or 'General' }}</span>
+                <span><i class="fa-solid fa-location-dot"></i> {{ s.venue_name or 'Venue TBA' }}</span>
+                {% if s.speaker_name %}<span><i class="fa-solid fa-microphone"></i> {{ s.speaker_name }}{% if s.speaker_org %} · {{ s.speaker_org }}{% endif %}</span>{% endif %}
+              </p>
+            </div>
+          </div>
+          <span class="status-pill status-{{ s.status }}"><i class="fa-solid fa-circle"></i> {{ s.status }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+{% endblock %}

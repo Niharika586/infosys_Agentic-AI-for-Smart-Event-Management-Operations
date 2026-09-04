@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Risk Center{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/executive.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1><i class="fa-solid fa-shield-halved"></i> Risk Center</h1>
+        <p>Live risk register scanned from venues, speakers, schedule, sponsorship, incidents and alerts.</p>
+      </div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-fire"></i></div><div><h3>{{ register.counts.Critical }}</h3><p>Critical Risks</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></div><div><h3>{{ register.counts.High }}</h3><p>High Risks</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon teal"><i class="fa-solid fa-circle-exclamation"></i></div><div><h3>{{ register.counts.Medium }}</h3><p>Medium Risks</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon green"><i class="fa-solid fa-circle-check"></i></div><div><h3>{{ register.counts.Low }}</h3><p>Low Risks</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon indigo"><i class="fa-solid fa-list"></i></div><div><h3>{{ register.total }}</h3><p>Total Risks Detected</p></div></div>
+    </div>
+
+    <div class="glass widget-card" data-aos="fade-up">
+      <h3><i class="fa-solid fa-list-check"></i> Risk Register</h3>
+      <div style="overflow-x:auto;">
+        <table class="risk-table">
+          <thead><tr><th>Severity</th><th>Module</th><th>Title</th><th>Description</th><th>Risk Score</th><th>Recommended Action</th></tr></thead>
+          <tbody>
+            {% set label_class = {'Critical':'badge-critical-risk','High':'badge-high','Medium':'badge-medium','Low':'badge-low'} %}
+            {% for r in register.risks %}
+            <tr>
+              <td><span class="badge-label {{ label_class.get(r.severity, 'badge-medium') }}">{{ r.severity }}</span></td>
+              <td>{{ r.module }}</td>
+              <td>{{ r.title }}</td>
+              <td>{{ r.description }}</td>
+              <td>{{ r.risk_score }}/100</td>
+              <td>{{ r.recommended_action }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="muted">No risks detected — event indicators are within healthy ranges.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

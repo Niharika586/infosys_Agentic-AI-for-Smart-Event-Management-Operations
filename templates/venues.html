@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Venue Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Venue Management</h1>
+        <p>Search, filter and book venues — capacity, facilities, live availability and booking history.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('venue_agent') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Venue Agent</a>
+        <button class="btn btn-gradient btn-sm" id="addVenueBtn"><i class="fa-solid fa-plus"></i> Add Venue</button>
+      </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="glass venue-search-panel" data-aos="fade-up">
+      <div class="search-box venue-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="venueSearchInput" placeholder="Search venues by name, location, room type or facility...">
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Capacity</label>
+          <div class="chip-row" id="capacityChips">
+            <button type="button" class="filter-chip active" data-value="0">Any</button>
+            <button type="button" class="filter-chip" data-value="50">50+</button>
+            <button type="button" class="filter-chip" data-value="100">100+</button>
+            <button type="button" class="filter-chip" data-value="200">200+</button>
+            <button type="button" class="filter-chip" data-value="500">500+</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Availability</label>
+          <div class="chip-row" id="availabilityChips">
+            <button type="button" class="filter-chip active" data-value="All">All</button>
+            <button type="button" class="filter-chip" data-value="Available">Available</button>
+            <button type="button" class="filter-chip" data-value="Reserved">Reserved</button>
+            <button type="button" class="filter-chip" data-value="Occupied">Occupied</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Location</label>
+          <select id="locationFilter">
+            <option value="">Any location</option>
+            {% for loc in locations %}<option value="{{ loc }}">{{ loc }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Room Type</label>
+          <select id="roomTypeFilter">
+            <option value="">Any type</option>
+            {% for rt in ROOM_TYPES %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Sort By</label>
+          <select id="sortSelect">
+            <option value="name">Venue Name (A–Z)</option>
+            <option value="capacity_asc">Capacity: Low to High</option>
+            <option value="capacity_desc">Capacity: High to Low</option>
+            <option value="availability">Availability</option>
+            <option value="best_match">Best Match</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Check availability for date</label>
+          <input type="date" id="dateFilter">
+        </div>
+        <div class="filter-group">
+          <label>Start Time</label>
+          <input type="time" id="startTimeFilter">
+        </div>
+        <div class="filter-group">
+          <label>End Time</label>
+          <input type="time" id="endTimeFilter">
+        </div>
+        <div class="filter-group">
+          <label>Attendees (for Best Match)</label>
+          <input type="number" id="attendeesFilter" min="0" placeholder="e.g. 150">
+        </div>
+        <div class="filter-group filter-group-reset">
+          <label>&nbsp;</label>
+          <button type="button" class="btn btn-outline btn-sm" id="resetFiltersBtn"><i class="fa-solid fa-rotate-left"></i> Reset Filters</button>
+        </div>
+      </div>
+
+      <div class="filter-group facilities-filter-group">
+        <label>Facilities</label>
+        <div class="checkbox-grid" id="facilitiesFilterGrid">
+          {% for f in FACILITIES_LIST %}
+          <label class="checkbox-chip"><input type="checkbox" name="facilityFilter" value="{{ f }}"> {{ f }}</label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="venue-results-meta" data-aos="fade-up">
+      <span id="venueResultCount">{{ venues|length }} venue(s) found</span>
+    </div>
+
+    <!-- Venue Cards Grid -->
+    <div class="venue-cards-grid" id="venueCardsGrid" data-aos="fade-up">
+      {% for v in venues %}
+      <div class="glass venue-card" data-id="{{ v.id }}" data-name="{{ v.name }}" data-location="{{ v.location }}"
+           data-capacity="{{ v.capacity }}" data-roomtype="{{ v.room_type }}" data-facilities="{{ v.facilities }}"
+           data-status="{{ v.status }}">
+        <div class="venue-card-top">
+          <h4>{{ v.name }}</h4>
+          {% if v.live_status == 'Occupied' %}<span class="badge badge-red">Occupied</span>
+          {% elif v.live_status == 'Reserved' %}<span class="badge badge-yellow">Reserved</span>
+          {% elif v.status == 'Maintenance' %}<span class="badge badge-gray">Maintenance</span>
+          {% else %}<span class="badge badge-green">Available</span>{% endif %}
+        </div>
+        <p class="venue-card-location"><i class="fa-solid fa-location-dot"></i> {{ v.location or 'Location not set' }}</p>
+        <div class="venue-card-stats">
+          <span><i class="fa-solid fa-users"></i> Capacity {{ v.capacity }}</span>
+          <span><i class="fa-solid fa-door-open"></i> {{ v.room_type or 'N/A' }}</span>
+        </div>
+        <div class="tag-pills">
+          {% for f in v.facilities_list[:5] %}<span class="tag-pill">{{ f }}</span>{% endfor %}
+          {% if v.facilities_list|length > 5 %}<span class="tag-pill">+{{ v.facilities_list|length - 5 }} more</span>{% endif %}
+        </div>
+        <p class="venue-card-next"><i class="fa-solid fa-clock"></i> {{ v.next_available }}</p>
+        <div class="venue-card-actions">
+          <button class="btn btn-outline btn-xs view-details-btn"><i class="fa-solid fa-eye"></i> View Details</button>
+          <button class="btn btn-gradient btn-xs book-venue-btn"><i class="fa-solid fa-calendar-plus"></i> Book Venue</button>
+          <button class="icon-action edit-venue-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+          <button class="icon-action delete-venue-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      {% else %}
+      <div class="glass" style="padding:40px;text-align:center;color:var(--text-dim);grid-column:1/-1;">
+        No venues added yet. Click "Add Venue" to get started.
+      </div>
+      {% endfor %}
+    </div>
+    <div class="glass" id="venueEmptyState" style="padding:40px;text-align:center;color:var(--text-dim);display:none;">
+      <i class="fa-solid fa-magnifying-glass" style="font-size:1.6rem;margin-bottom:10px;display:block;"></i>
+      No venues match your search and filters. Try adjusting them.
+    </div>
+
+  </div>
+</section>
+
+<!-- Venue Add/Edit Modal -->
+<div class="modal-overlay" id="venueModal">
+  <div class="glass modal-box wide">
+    <div class="modal-header"><h3 id="venueModalTitle">Add Venue</h3><button id="closeVenueModal">&times;</button></div>
+    <form id="venueForm">
+      <input type="hidden" id="venueId">
+      <div class="form-grid two">
+        <div class="form-group"><label>Venue Name</label><input type="text" id="venueName" required></div>
+        <div class="form-group"><label>Location</label><input type="text" id="venueLocation"></div>
+        <div class="form-group"><label>Capacity</label><input type="number" id="venueCapacity" min="1" required></div>
+        <div class="form-group">
+          <label>Room Type</label>
+          <select id="venueRoomType">
+            <option value="">Select type</option>
+            {% for rt in ROOM_TYPES %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="venueStatus">
+            {% for st in VENUE_STATUSES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Facilities / Equipment</label>
+        <div class="checkbox-grid">
+          {% for f in FACILITIES_LIST %}
+          <label class="checkbox-chip"><input type="checkbox" name="facilities" value="{{ f }}"> {{ f }}</label>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Save Venue</button>
+    </form>
+  </div>
+</div>
+
+<!-- Venue Details Modal -->
+<div class="modal-overlay" id="venueDetailsModal">
+  <div class="glass modal-box wide">
+    <div class="modal-header"><h3 id="detailsVenueName">Venue Details</h3><button id="closeVenueDetailsModal">&times;</button></div>
+    <div id="venueDetailsBody"><div class="muted center" style="padding:30px;">Loading...</div></div>
+  </div>
+</div>
+
+<!-- Book Venue Modal -->
+<div class="modal-overlay" id="bookVenueModal">
+  <div class="glass modal-box">
+    <div class="modal-header"><h3>Book Venue — <span id="bookVenueName"></span></h3><button id="closeBookVenueModal">&times;</button></div>
+    <div class="conflict-alert" id="bookVenueError" style="display:none;">
+      <i class="fa-solid fa-triangle-exclamation"></i><span id="bookVenueErrorText"></span>
+    </div>
+    <form id="bookVenueForm">
+      <input type="hidden" id="bookVenueId">
+      <div class="form-group"><label>Session / Event Title</label><input type="text" id="bookTitle" required></div>
+      <div class="form-grid two">
+        <div class="form-group">
+          <label>Session Type</label>
+          <select id="bookSessionType">
+            <option value="">Select type</option>
+            {% for st in SESSION_TYPES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label>Expected Attendees</label><input type="number" id="bookAttendees" min="0"></div>
+      </div>
+      <div class="form-grid three">
+        <div class="form-group"><label>Date</label><input type="date" id="bookDate" required></div>
+        <div class="form-group"><label>Start Time</label><input type="time" id="bookStart" required></div>
+        <div class="form-group"><label>End Time</label><input type="time" id="bookEnd" required></div>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-calendar-check"></i> Confirm Booking</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', function () { initVenueTable(); initVenueSearch(); });</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Report Incident{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Report Incident</h1>
+        <p>Log a new incident. The Incident Agent will generate a recommended action automatically.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('incident_agent') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Preview Agent Recommendation</a>
+      </div>
+    </div>
+
+    <form method="POST" class="glass agent-form" data-aos="fade-up">
+      <div class="form-group"><label>Incident Title</label><input type="text" name="title" required placeholder="Short summary of what happened"></div>
+      <div class="form-group"><label>Description</label><textarea name="description" rows="3" placeholder="Full details of the incident"></textarea></div>
+
+      <div class="form-grid two">
+        <div class="form-group">
+          <label>Category</label>
+          <select name="category" id="reportCategory" required>
+            <option value="">Select category</option>
+            {% for c in INCIDENT_CATEGORIES %}<option value="{{ c }}" {{ 'selected' if prefill.category==c }}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select name="priority" id="reportPriority" required>
+            <option value="">Select priority</option>
+            {% for p in INCIDENT_PRIORITIES %}<option value="{{ p }}" {{ 'selected' if prefill.priority==p }}>{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid two">
+        <div class="form-group">
+          <label>Related Venue (optional)</label>
+          <select name="related_venue_id">
+            <option value="">None</option>
+            {% for v in venues %}<option value="{{ v.id }}">{{ v.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Related Session (optional)</label>
+          <select name="related_session_id">
+            <option value="">None</option>
+            {% for s in sessions %}<option value="{{ s.id }}">{{ s.title }} ({{ s.session_date }})</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Related Speaker (optional)</label>
+          <select name="related_speaker_id">
+            <option value="">None</option>
+            {% for sp in speakers %}<option value="{{ sp.id }}">{{ sp.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Related Sponsor (optional)</label>
+          <select name="related_sponsor_id">
+            <option value="">None</option>
+            {% for sn in sponsors %}<option value="{{ sn.id }}">{{ sn.company_name }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid two">
+        <div class="form-group"><label>Assigned Person (optional)</label><input type="text" name="assigned_to" placeholder="e.g. Facilities Team"></div>
+        <div class="form-group"><label>Due Date (optional)</label><input type="date" name="due_date"></div>
+      </div>
+
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-circle-plus"></i> Report Incident</button>
+    </form>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initIncidentReportForm);</script>
+{% endblock %}

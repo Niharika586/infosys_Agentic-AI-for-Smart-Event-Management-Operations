@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}About Project{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+  <div class="container" data-aos="fade-up">
+    <span class="badge-pill"><i class="fa-solid fa-circle-info"></i> About The Project</span>
+    <h1>Understanding <span class="gradient-text">RegisterAI</span></h1>
+    <p>A deep dive into the objectives, benefits, technology and AI workflow behind this system.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="two-col" data-aos="fade-up">
+      <div class="glass pad-card">
+        <h2><i class="fa-solid fa-bullseye"></i> Project Description</h2>
+        <p>RegisterAI is a full-stack, AI-augmented registration and attendee management platform
+        developed as part of the Infosys Springboard Virtual Internship — Milestone 1. It streamlines
+        the entire event lifecycle: attendees register through a validated form, data is persisted in
+        SQLite via a Flask backend, and a rule-based AI module continuously mines that data to
+        surface predictions and recommendations for organizers through an interactive dashboard.</p>
+      </div>
+      <div class="glass pad-card">
+        <h2><i class="fa-solid fa-list-check"></i> Objectives</h2>
+        <ul class="check-list">
+          <li><i class="fa-solid fa-circle-check"></i> Build a responsive, production-style multi-page web app</li>
+          <li><i class="fa-solid fa-circle-check"></i> Implement secure CRUD operations on a relational database</li>
+          <li><i class="fa-solid fa-circle-check"></i> Apply rule-based AI for predictive event analytics</li>
+          <li><i class="fa-solid fa-circle-check"></i> Deliver real-time dashboards with dynamic charts</li>
+          <li><i class="fa-solid fa-circle-check"></i> Enable QR-based digital check-in for events</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="glass pad-card mt-32" data-aos="fade-up">
+      <h2><i class="fa-solid fa-award"></i> Benefits</h2>
+      <div class="benefits-grid">
+        <div><i class="fa-solid fa-clock"></i><h4>Saves Time</h4><p>Automates manual registration and reporting tasks.</p></div>
+        <div><i class="fa-solid fa-shield-halved"></i><h4>Data Accuracy</h4><p>Validation & duplicate detection reduce human error.</p></div>
+        <div><i class="fa-solid fa-lightbulb"></i><h4>Actionable Insights</h4><p>AI-generated recommendations improve planning.</p></div>
+        <div><i class="fa-solid fa-mobile-screen"></i><h4>Accessible Anywhere</h4><p>Fully responsive on mobile, tablet & desktop.</p></div>
+      </div>
+    </div>
+
+    <div id="tech" class="glass pad-card mt-32" data-aos="fade-up">
+      <h2><i class="fa-solid fa-layer-group"></i> Technology Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-item"><i class="fa-brands fa-html5"></i><span>HTML5</span></div>
+        <div class="tech-item"><i class="fa-brands fa-css3-alt"></i><span>CSS3</span></div>
+        <div class="tech-item"><i class="fa-brands fa-js"></i><span>JavaScript ES6</span></div>
+        <div class="tech-item"><i class="fa-brands fa-python"></i><span>Flask (Python)</span></div>
+        <div class="tech-item"><i class="fa-solid fa-database"></i><span>SQLite</span></div>
+        <div class="tech-item"><i class="fa-solid fa-robot"></i><span>Rule-Based AI</span></div>
+        <div class="tech-item"><i class="fa-solid fa-chart-simple"></i><span>Chart.js</span></div>
+        <div class="tech-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>AOS Animations</span></div>
+      </div>
+    </div>
+
+    <div id="architecture" class="glass pad-card mt-32" data-aos="fade-up">
+      <h2><i class="fa-solid fa-sitemap"></i> Architecture Diagram</h2>
+      <div class="arch-diagram">
+        <div class="arch-box"><i class="fa-solid fa-desktop"></i><p>Frontend<br><span>HTML/CSS/JS</span></p></div>
+        <i class="fa-solid fa-arrow-right-arrow-left arch-arrow"></i>
+        <div class="arch-box"><i class="fa-solid fa-server"></i><p>Flask Server<br><span>Routes & APIs</span></p></div>
+        <i class="fa-solid fa-arrow-right-arrow-left arch-arrow"></i>
+        <div class="arch-box"><i class="fa-solid fa-database"></i><p>SQLite DB<br><span>Users, Admins, Events</span></p></div>
+        <i class="fa-solid fa-arrow-right-arrow-left arch-arrow"></i>
+        <div class="arch-box"><i class="fa-solid fa-brain"></i><p>AI Module<br><span>Prediction Engine</span></p></div>
+      </div>
+    </div>
+
+    <div class="glass pad-card mt-32" data-aos="fade-up">
+      <h2><i class="fa-solid fa-diagram-project"></i> AI Workflow</h2>
+      <div class="workflow-steps">
+        <div class="wf-step"><span>01</span><h4>Data Collection</h4><p>Registration form captures structured attendee data.</p></div>
+        <div class="wf-step"><span>02</span><h4>Feature Extraction</h4><p>Mode, participant category, department & timing signals extracted.</p></div>
+        <div class="wf-step"><span>03</span><h4>Rule-Based Scoring</h4><p>Weighted heuristics compute attendance & risk scores.</p></div>
+        <div class="wf-step"><span>04</span><h4>Insight Generation</h4><p>Natural-language AI summary & recommendations built.</p></div>
+        <div class="wf-step"><span>05</span><h4>Visualization</h4><p>Results rendered via animated Chart.js dashboards.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

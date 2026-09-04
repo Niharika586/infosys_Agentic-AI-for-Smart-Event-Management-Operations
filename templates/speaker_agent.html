@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Speaker Agent{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Speaker Agent</h1>
+        <p>Rule-based recommendation engine for matching speakers to session requirements.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('speakers_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-microphone"></i> Manage Speakers</a>
+      </div>
+    </div>
+
+    <div class="glass agent-intro" data-aos="fade-up">
+      <div class="agent-intro-icon"><i class="fa-solid fa-robot"></i></div>
+      <div>
+        <h3>How the Speaker Agent works</h3>
+        <p>Describe the session topic and schedule. The agent matches speaker expertise against the topic,
+        checks their declared availability, and rules out anyone with a scheduling conflict — then ranks the
+        best-fit speakers with the reasoning shown for every candidate considered.</p>
+      </div>
+    </div>
+
+    <form method="POST" class="glass agent-form" data-aos="fade-up">
+      <div class="form-group">
+        <label>Session Topic / Keywords</label>
+        <input type="text" name="topic" placeholder="e.g. Machine Learning and Data Science" value="{{ requirements.topic or '' }}" required>
+      </div>
+      <div class="form-grid three">
+        <div class="form-group">
+          <label>Session Type</label>
+          <select name="session_type">
+            <option value="">Any</option>
+            {% for st in SESSION_TYPES %}
+            <option value="{{ st }}" {{ 'selected' if requirements.session_type==st }}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" name="session_date" value="{{ requirements.session_date or '' }}" required>
+        </div>
+        <div class="form-group"></div>
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="time" name="start_time" value="{{ requirements.start_time or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="time" name="end_time" value="{{ requirements.end_time or '' }}" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Get Speaker Recommendations</button>
+    </form>
+
+    {% if results is not none %}
+    <div data-aos="fade-up">
+      <div class="agent-results-header">
+        <h3><i class="fa-solid fa-list-ol"></i> Recommendation Results ({{ results|length }} speaker(s) evaluated)</h3>
+      </div>
+
+      {% if not results %}
+      <div class="glass" style="padding:30px;text-align:center;color:var(--text-dim);">
+        No speakers found. Add speakers first in Speaker Management.
+      </div>
+      {% else %}
+      <div class="reco-cards">
+        {% for r in results %}
+        <div class="glass reco-card {{ 'is-recommended' if r.recommended }} {{ 'is-disqualified' if r.disqualified }}">
+          <div class="reco-card-top">
+            <div class="reco-card-title">
+              <div class="reco-rank">{{ loop.index }}</div>
+              <div>
+                <h4>{{ r.speaker.name }} {% if r.recommended %}<span class="badge badge-green">Recommended</span>{% endif %}</h4>
+                <span>{{ r.speaker.designation or 'Speaker' }} · {{ r.speaker.organization or 'N/A' }}</span>
+              </div>
+            </div>
+            <div class="reco-score">
+              <span class="badge {{ 'badge-red' if r.status_label=='Conflict' else 'badge-gray' if r.status_label=='Unavailable' else 'badge-green' }}">{{ r.status_label }}</span>
+              <div class="reco-score-bar-outer"><div class="reco-score-bar-inner" style="width:{{ r.score }}%;"></div></div>
+              <span class="reco-score-val">{{ r.score }}%</span>
+            </div>
+          </div>
+          <div class="reco-reasons">
+            <ul>
+              {% for reason in r.reasons_pass %}
+              <li class="pass"><i class="fa-solid fa-circle-check"></i> {{ reason }}</li>
+              {% endfor %}
+            </ul>
+            <ul>
+              {% for reason in r.reasons_fail %}
+              <li class="fail"><i class="fa-solid fa-circle-xmark"></i> {{ reason }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% if not r.disqualified %}
+          <div style="margin-top:14px;">
+            <a class="btn btn-outline btn-sm"
+               href="{{ url_for('sessions_page') }}?prefill=1&speaker_id={{ r.speaker.id }}&session_type={{ requirements.session_type }}&session_date={{ requirements.session_date }}&start_time={{ requirements.start_time }}&end_time={{ requirements.end_time }}&title={{ requirements.topic }}">
+              <i class="fa-solid fa-check"></i> Confirm Assignment &amp; Create Session
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initAgentForm);</script>
+{% endblock %}

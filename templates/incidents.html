@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Incident Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="dash-header" data-aos="fade-up">
+      <div>
+        <h1>Incident Management</h1>
+        <p>Track, assign and resolve operational incidents from report through closure.</p>
+      </div>
+      <div class="dash-header-actions">
+        <a href="{{ url_for('incident_agent') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-robot"></i> Incident Agent</a>
+        <a href="{{ url_for('report_incident') }}" class="btn btn-gradient btn-sm"><i class="fa-solid fa-circle-plus"></i> Report Incident</a>
+      </div>
+    </div>
+
+    <div class="dash-cards" data-aos="fade-up">
+      <div class="dcard glass"><div class="dcard-icon blue"><i class="fa-solid fa-list"></i></div><div><h3>{{ stats.total_incidents }}</h3><p>Total Incidents</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon orange"><i class="fa-solid fa-folder-open"></i></div><div><h3>{{ stats.open_incidents }}</h3><p>Open</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon purple"><i class="fa-solid fa-spinner"></i></div><div><h3>{{ stats.in_progress }}</h3><p>In Progress</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon pink"><i class="fa-solid fa-triangle-exclamation"></i></div><div><h3>{{ stats.high_priority }}</h3><p>High Priority</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon red"><i class="fa-solid fa-fire"></i></div><div><h3>{{ stats.critical }}</h3><p>Critical</p></div></div>
+      <div class="dcard glass"><div class="dcard-icon green"><i class="fa-solid fa-circle-check"></i></div><div><h3>{{ stats.resolved }}</h3><p>Resolved</p></div></div>
+    </div>
+
+    <form method="GET" class="glass venue-search-panel" data-aos="fade-up">
+      <div class="search-box venue-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="q" value="{{ filters.q }}" placeholder="Search by title, description or category...">
+      </div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Category</label>
+          <select name="category">
+            <option value="">Any category</option>
+            {% for c in INCIDENT_CATEGORIES %}<option value="{{ c }}" {{ 'selected' if filters.category==c }}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Priority</label>
+          <select name="priority">
+            <option value="">Any priority</option>
+            {% for p in INCIDENT_PRIORITIES %}<option value="{{ p }}" {{ 'selected' if filters.priority==p }}>{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select name="status">
+            <option value="">Any status</option>
+            {% for st in INCIDENT_STATUSES %}<option value="{{ st }}" {{ 'selected' if filters.status==st }}>{{ st }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-group filter-group-reset">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-gradient btn-sm"><i class="fa-solid fa-filter"></i> Apply</button>
+        </div>
+        <div class="filter-group filter-group-reset">
+          <label>&nbsp;</label>
+          <a href="{{ url_for('incidents_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="venue-results-meta" data-aos="fade-up"><span>{{ incidents|length }} incident(s) found</span></div>
+
+    <div class="incident-cards-grid" id="incidentCardsGrid" data-aos="fade-up">
+      {% for i in incidents %}
+      <div class="glass incident-card" data-id="{{ i.id }}">
+        <div class="incident-card-top">
+          <div>
+            <h4><a href="{{ url_for('incident_detail', incident_id=i.id) }}" style="color:inherit;">{{ i.title }}</a></h4>
+            <p class="sponsor-card-sub">{{ i.category }} · Reported {{ i.created_at }}</p>
+          </div>
+          <span class="badge badge-priority-{{ i.priority|lower }}">{{ i.priority }}</span>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-muted);">{{ (i.description or '')[:120] }}{% if i.description and i.description|length > 120 %}...{% endif %}</p>
+        <div class="sponsor-card-stats">
+          <span><i class="fa-solid fa-user"></i> {{ i.assigned_to or 'Unassigned' }}</span>
+          {% if i.due_date %}<span><i class="fa-solid fa-calendar"></i> Due {{ i.due_date }}</span>{% endif %}
+        </div>
+        <span class="badge {{ 'badge-green' if i.status in ['Resolved','Verified','Closed'] else 'badge-yellow' if i.status=='In Progress' else 'badge-blue' }}" style="width:fit-content;">{{ i.status }}</span>
+        <div class="incident-card-actions">
+          <a href="{{ url_for('incident_detail', incident_id=i.id) }}" class="btn btn-outline btn-xs"><i class="fa-solid fa-eye"></i> View</a>
+          <button class="icon-action delete-incident-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      {% else %}
+      <div class="glass" style="padding:40px;text-align:center;color:var(--text-dim);grid-column:1/-1;">
+        No incidents match your search and filters.
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', initIncidentList);</script>
+{% endblock %}

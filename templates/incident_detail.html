@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ incident.title }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/operations.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/milestone3.css') }}">
+{% endblock %}
+{% block content %}
+
+<section class="dash-wrap">
+  <div class="container">
+
+    <div class="glass profile-header" data-aos="fade-up">
+      <div>
+        <h2>{{ incident.title }}
+          <span class="badge badge-priority-{{ incident.priority|lower }}">{{ incident.priority }}</span>
+          <span class="badge {{ 'badge-green' if incident.status in ['Resolved','Verified','Closed'] else 'badge-yellow' if incident.status=='In Progress' else 'badge-blue' }}">{{ incident.status }}</span>
+        </h2>
+        <div class="profile-header-meta">
+          <span><i class="fa-solid fa-layer-group"></i> {{ incident.category }}</span>
+          <span><i class="fa-solid fa-user"></i> Reported by {{ incident.reported_by or 'N/A' }}</span>
+          <span><i class="fa-solid fa-user-check"></i> Assigned to {{ incident.assigned_to or 'Unassigned' }}</span>
+          {% if incident.due_date %}<span><i class="fa-solid fa-calendar"></i> Due {{ incident.due_date }}</span>{% endif %}
+          {% if incident.venue_name %}<span><i class="fa-solid fa-building"></i> {{ incident.venue_name }}</span>{% endif %}
+          {% if incident.speaker_name %}<span><i class="fa-solid fa-microphone"></i> {{ incident.speaker_name }}</span>{% endif %}
+          {% if incident.sponsor_name %}<span><i class="fa-solid fa-handshake"></i> {{ incident.sponsor_name }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="profile-header-actions">
+        <a href="{{ url_for('incidents_page') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Incidents</a>
+      </div>
+    </div>
+
+    <div class="glass" style="padding:20px 26px;margin-bottom:22px;" data-aos="fade-up">
+      <h4 style="font-size:0.9rem;margin-bottom:8px;">Description</h4>
+      <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;">{{ incident.description or 'No description provided.' }}</p>
+      {% if incident.recommendation %}
+      <h4 style="font-size:0.9rem;margin:18px 0 8px;"><i class="fa-solid fa-robot"></i> Incident Agent Recommendation</h4>
+      <div class="explanation-box">{{ incident.recommendation }}</div>
+      {% endif %}
+      {% if incident.resolution %}
+      <h4 style="font-size:0.9rem;margin:18px 0 8px;"><i class="fa-solid fa-circle-check"></i> Resolution</h4>
+      <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;">{{ incident.resolution }}</p>
+      {% endif %}
+    </div>
+
+    <div class="charts-grid" data-aos="fade-up">
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-timeline"></i> Incident Timeline</h3>
+        <div class="activity-timeline" style="margin-top:18px;">
+          {% for t in timeline %}
+          <div class="timeline-item">
+            <div class="timeline-item-head">
+              <h5>{{ t.status_change or 'Update' }}</h5>
+              <span class="timeline-item-date">{{ t.created_at }}</span>
+            </div>
+            <div class="timeline-item-body">{{ t.update_text }} <span style="color:var(--text-dim);">— {{ t.updated_by }}</span></div>
+          </div>
+          {% else %}
+          <div class="timeline-empty">No updates logged yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="glass chart-card">
+        <h3><i class="fa-solid fa-pen-to-square"></i> Add Update</h3>
+        <form id="incidentUpdateForm" style="margin-top:16px;">
+          <div class="form-group"><label>Update Note</label><textarea id="upd_text" rows="3" placeholder="What's changed or what did you find?"></textarea></div>
+          <div class="form-grid two">
+            <div class="form-group">
+              <label>Change Status</label>
+              <select id="upd_status">
+                <option value="">Keep current status</option>
+                {% for st in INCIDENT_STATUSES %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="form-group"><label>Assign To</label><input type="text" id="upd_assigned" placeholder="e.g. Facilities Team"></div>
+          </div>
+          <div class="form-group"><label>Resolution (if resolving)</label><textarea id="upd_resolution" rows="2" placeholder="How was it resolved?"></textarea></div>
+          <button type="submit" class="btn btn-gradient btn-block"><i class="fa-solid fa-floppy-disk"></i> Save Update</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/milestone3.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded', function () { initIncidentDetail({{ incident.id }}); });</script>
+{% endblock %}
